@@ -14,6 +14,14 @@
   -webkit-text-size-adjust: 100%;
 }
 
+html {
+  @apply w-full bg-gradient-to-b from-light-200 to-light-400 text-dark-100 bg-cover bg-fixed;
+}
+
+html.dark {
+  @apply bg-gradient-to-t from-dark-200 to-dark-400 text-light-100;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -23,12 +31,36 @@ a:hover {
   color: #535bf2;
 }
 
-html {
-  @apply w-full bg-gradient-to-b from-light-200 to-light-400 text-dark-100 bg-cover bg-fixed;
+h1 {
+  @apply text-4xl font-bold;
+}
+h2 {
+  @apply text-3xl font-bold;
+}
+h3 {
+  @apply text-2xl font-bold;
+}
+h4 {
+  @apply text-lg font-bold;
 }
 
-html.dark {
-  @apply bg-gradient-to-t from-dark-200 to-dark-400 text-light-100;
+
+.card {
+  @apply flex px-2 py-2 bg-light-200 dark:bg-dark-600 rounded-lg shadow-lg;
+}
+.card.large {
+  @apply px-6 py-4;
 }
 
-
+.button {
+  @apply inline-flex items-center justify-center px-3 py-2 font-semibold whitespace-nowrap rounded-lg text-dark-100 hover:text-dark-500 dark:text-light-100 dark:hover:text-light-200 transition cursor-pointer;
+}
+.button.primary {
+  @apply bg-violet-600 hover:bg-violet-700 text-light-100 hover:text-light-200;
+}
+.button.secondary {
+  @apply border-2 border-violet-600 hover:border-violet-700;
+}
+.button.destructive {
+  @apply border-2 border-red-500 hover:border-red-600;
+}
