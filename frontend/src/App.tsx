@@ -3,10 +3,12 @@ import Sidebar from "./components/Sidebar";
 import Map from "./components/Map";
 import { GET, POST } from "./util/apiHandler";
 import { Button } from "@mui/material";
+import { Post } from "./types/post";
 
 function App() {
 
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Post|undefined>(undefined);
 
   async function Refresh()
   {
@@ -16,40 +18,69 @@ function App() {
         success: true,
         posts: [
           {
-            description: "testing descriptionas dfadsfjklasdfl ;asdjf;lasjdf;laj",
+            id: 1,
+            display_name: "This is a name :o",
+            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
-            displayName: "name"
+            tags: [],
+            price_range: 1,
           },
           {
-            description: "this is a description and it has some words in it",
-            location: [47.6061, -122.3328],
-            displayName: "This is a name"
-          },{
-            description: "this is a description and it has some words in it",
-            location: [47.6061, -122.3328],
-            displayName: "This is a name"
-          },{
-            description: "this is a description and it has some words in it",
-            location: [47.6061, -122.3328],
-            displayName: "This is a name"
-          },{
-            description: "this is a description and it has some words in it",
-            location: [47.6061, -122.3328],
-            displayName: "This is a name"
-          },{
-            description: "this is a description and it has some words in it",
-            location: [47.6061, -122.3328],
-            displayName: "This is a name"
-          },{
-            description: "this is a description and it has some words in it",
-            location: [47.6061, -122.3328],
-            displayName: "This is a name"
-          }
+            id: 1,
+            display_name: "This is a name :o",
+            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+            location: [47.7, -122.3328],
+            tags: [],
+            price_range: 1,
+          },
+          {
+            id: 1,
+            display_name: "This is a name :o",
+            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+            location: [47.7, -122.3328],
+            tags: [],
+            price_range: 1,
+          },
+          {
+            id: 1,
+            display_name: "This is a name :o",
+            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+            location: [47.7, -122.3328],
+            tags: [],
+            price_range: 1,
+          },
+          {
+            id: 1,
+            display_name: "This is a name :o",
+            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+            location: [47.7, -122.3328],
+            tags: [],
+            price_range: 1,
+          },
+          {
+            id: 1,
+            display_name: "This is a name :o",
+            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+            location: [47.7, -122.3328],
+            tags: [],
+            price_range: 1,
+          },
+          {
+            id: 1,
+            display_name: "This is a name :o",
+            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+            location: [47.7, -122.3328],
+            tags: [],
+            price_range: 1,
+          },
         ]
       }
     };
     console.log(res.data);
     setPosts(res.data.posts);
+
+    // TESTING:
+    setSelectedPost(res.data.posts[0]);
   }
 
   useEffect(()=>{
@@ -61,7 +92,7 @@ function App() {
       
        
       <div className="w-full h-full overflow-hidden relative flex flex-row">
-        <Sidebar posts={posts}></Sidebar>
+        <Sidebar posts={posts} selectedPost={selectedPost} setSelectedPost={setSelectedPost}></Sidebar>
         <div className="w-full h-full overflow-hidden">
           {/* <Button variant="contained" onClick={()=>setSidebarOpen(!sidebarOpen)}>Toggle Sidebar</Button> */}
           {/* <Button onClick={()=>POST("/get_posts")}></Button> */}
