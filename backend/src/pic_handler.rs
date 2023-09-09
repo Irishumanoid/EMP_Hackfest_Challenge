@@ -34,7 +34,7 @@ impl fmt::Display for CustomError {
 }
 
 #[post("/image/upload_image", format = "multipart/data", data = "<data>")]
-fn uploader(mut data: Form<Picture<'_>>) -> (ContentType, String) {
+pub fn uploader(mut data: Form<Picture<'_>>) -> (ContentType, String) {
 
     let mut rng = rand::thread_rng();
     let id = rng.gen::<u32>();
