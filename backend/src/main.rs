@@ -25,9 +25,13 @@ fn index() -> &'static str {
 pub struct DeprecatedUserPost {
     pub display_name: String,
     pub description: String,
-    pub location: [f32; 2],
+    pub location: [f64; 2],
     pub tags: Vec<String>,
+<<<<<<< Updated upstream
     pub price: i32,
+=======
+    pub price: [f64; 2],
+>>>>>>> Stashed changes
     pub picture: Option<String>,
 }
 
@@ -50,7 +54,8 @@ fn post_post(post: Json<DeprecatedUserPost>, server_arc: &State<Arc<Mutex<Server
 
 #[derive(Deserialize)]
 struct GetPostFilters {
-    location: [f32; 2],
+    location: [f64; 2],
+    location_range: f64, //miles
     tags: Vec<String>,
     price_range: i32,
 }

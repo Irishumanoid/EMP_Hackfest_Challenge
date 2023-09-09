@@ -12,7 +12,7 @@
 // Similar posts are also clusterd together and their reputations are merged. However, the posts still stay seperate.
 
 use core::panic;
-
+use crate::GetPostFilters;
 use rocket::time::{PrimitiveDateTime, Duration};
 use serde::Serialize;
 
@@ -27,7 +27,7 @@ pub struct Database {
     data : Vec<DbEntry>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, std::fmt::Debug)]
 pub struct DbEntry {
     pub id : i32,
     pub post : UserPost,
@@ -38,18 +38,27 @@ impl DbEntry {
     pub fn get_score(&self, 
         recency_multiplier : fn(Option<Duration>) -> f64, 
         nearby_miles_multiplier : fn(f64) -> f64,
-        duration : Option<Duration>,
-        nearby_miles : f64,
+        time : Option<()>, //TODO
+        home_location : Coordinates,
     ) -> f64 {
+        let nearby_miles = Coordinates::deg_to_miles(self.post.location.deg_dist(&home_location));
         crate::macros::sigmoid(self.stats.get_net_votes()) //Sigmoid function so that the score is between 0 and 1
         //TODO make this more interesting with statistics
-        * recency_multiplier(duration) 
+        * recency_multiplier(None) //TODO
         * nearby_miles_multiplier(nearby_miles)
     }
 }
 
-fn inverse_distance_multiplier(miles : f64) -> f64 {
+pub fn inverse_distance_multiplier(miles : f64) -> f64 {
     1.0 / (f64::max(miles, 1.0))
+}
+pub fn recency_distance_function(duration : Option<Duration>) -> f64 {
+    match duration {
+        // Some(d) => inverse_distance_multiplier(d.num_seconds() as f64),
+        // None => 1.0,
+        _ => 1.0,
+    }
+    //TODO
 }
 
 // impl Serialize for Database {
@@ -69,17 +78,22 @@ impl Database {
     pub fn add_submission(&mut self, submission : UserPost) {
         self.data.push(DbEntry{ post : submission, stats : Stats::new(), id : self.data.len() as i32 });
     }
-    // pub fn popular_posts(&self, filters : GetPostFilters, range : f64) -> Vec<DbEntry> {
-    //     let mut result = self.data
-    //     .iter()
-    //     .filter(|i| i.post.check_if_in_filter(filters))
-    //     .collect::<Vec<DbEntry>>();
-    //     result.sort_by(|a, b| b.get_score().partial_cmp(&a.get_score()).unwrap());
-    //     result
-    // }
+    pub fn popular_posts(&self, filters : GetPostFilters) -> Vec<DbEntry> {
+        //TODO: Get actual time
+        let mut result = self.data.clone()
+        .into_iter()
+        .filter(|i| i.post.check_if_in_filter(&filters))
+        .collect::<Vec<DbEntry>>();
+        result.sort_by(|a : &DbEntry, b : &DbEntry| 
+            b.get_score(recency_distance_function, inverse_distance_multiplier, None, Coordinates::new(filters.location[0], filters.location[1]))
+            .partial_cmp(
+            &a.get_score(recency_distance_function, inverse_distance_multiplier, None, Coordinates::new(filters.location[0], filters.location[1])))
+            .unwrap());
+        result
+    }
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, std::fmt::Debug)]
 pub struct UserPost {
     pub display_name: String,
     pub description: String,
@@ -111,39 +125,38 @@ impl UserPost {
             picture: post.picture,
         }
     }
-    // pub fn check_if_type_in(&self, tags : &Vec<String>) -> bool {
-    //     crate::macros::bool_or(
-    //         tags.iter().map(|t: String | {
-    //             return match (t) {
-    //                 PostType::Clothes(_) => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("clothes"),
-    //                 PostType::Gas(_)     => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("gas"),
-    //                 PostType::Food(_)    => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("food"),
-    //                 PostType::Grocery(_) => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("grocery"),
-    //                 PostType::Parking(_) => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("parking"),
-    //             }
-    //         }
-    //         .collect::<Vec<bool>>())
-    //     )
-    // }
+    pub fn check_if_type_in(&self, tags : &Vec<String>) -> bool {
+        crate::macros::bool_or(
+            &self.tags.iter().map(|t: &PostType | 
+                match t {
+                    PostType::Clothes(_) => (tags.iter().map(|i| i.to_lowercase()).collect::<Vec<String>>()).contains(&"clothes".to_string()),
+                    PostType::Gas(_)     => (tags.iter().map(|i| i.to_lowercase()).collect::<Vec<String>>()).contains(&"gas".to_string()),
+                    PostType::Food(_)    => (tags.iter().map(|i| i.to_lowercase()).collect::<Vec<String>>()).contains(&"food".to_string()),
+                    PostType::Grocery(_) => (tags.iter().map(|i| i.to_lowercase()).collect::<Vec<String>>()).contains(&"grocery".to_string()),
+                    PostType::Parking(_) => (tags.iter().map(|i| i.to_lowercase()).collect::<Vec<String>>()).contains(&"parking".to_string()),
+                })
+            .collect::<Vec<bool>>()
+        )
+    }
     pub fn check_if_price_in_range(&self, price_range : i32) -> bool {
         true
         //TODO
     }
-    // pub fn check_if_in_filter(&self, filter : &GetPostFilters) -> bool {
-    //     //Check if any of the posttypes are in the tags; O(n) call to an O(n) function; O(n^2)
-    //     self.check_if_type_in(&filter.tags) 
-    //     && Coordinates::new(filter.location[0], filter.location[1]).in_range(&self.location, filter.location_range)
-    //     && self.check_if_price_in_range(filter.price_range)
-    // }
+    pub fn check_if_in_filter(&self, filter : &GetPostFilters) -> bool {
+        //Check if any of the posttypes are in the tags; O(n) call to an O(n) function; O(n^2)
+        self.check_if_type_in(&filter.tags) 
+        && Coordinates::new(filter.location[0], filter.location[1]).in_range(&self.location, filter.location_range)
+        && self.check_if_price_in_range(filter.price_range)
+    }
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, std::fmt::Debug)]
 pub struct Coordinates {
     pub latitude  : f64,
     pub longitude : f64,
 }
 
-#[derive(Clone)]
+#[derive(Clone, std::fmt::Debug)]
 pub struct Stats {
     pub upvotes   : u32,
     pub downvotes : u32,
@@ -201,12 +214,12 @@ impl Coordinates {
     }
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, std::fmt::Debug)]
 pub struct ClothesPrices {
     pub price_rating : i32, //1-5
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, std::fmt::Debug)]
 pub struct ParkingPrices {
     pub price_rating : i32,
     //pub avg_hourly : f64,
@@ -214,7 +227,7 @@ pub struct ParkingPrices {
     //pub avg_monthly: f64,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, std::fmt::Debug)]
 pub struct GasPrices {
     pub price_rating : i32,
     //pub per_gallon : f64,
@@ -222,7 +235,7 @@ pub struct GasPrices {
     //pub diesel_per_gallon : f64,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, std::fmt::Debug)]
 pub struct FoodPrices {
     pub price_rating : i32,
     //pub avg_food_per_person : f64,
@@ -230,12 +243,12 @@ pub struct FoodPrices {
 }
 
 //TODO: Make each of the fields optional and only filter with things that have the optional field filled in
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, std::fmt::Debug)]
 pub struct GroceryPrices {
     pub price_rating : i32, //1-5
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, std::fmt::Debug)]
 pub enum PostType {
     Clothes(ClothesPrices),
     Gas(GasPrices),
@@ -245,14 +258,22 @@ pub enum PostType {
 }
 
 
-// #[cfg(test)]
-// mod tests {
-//     #[test]
-//     //Run with -- --nocapture
-//     fn integ_test() {
-//         post1 = UserPost::new("John Billy", "Gas station here only 4.99 / gal", Coordinates::new(47.6720145,-122.3539607), vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], None);
-//         db = Database::new();
-//         db.add_submission(post1);
-//         println!(db.get_popular_posts(GetPostFilters {location : [47.6720145,-122.3539607], location_range : 1.0, tags : vec!["gas".to_string()], price_range : 1}));
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    //Run with -- --nocapture
+    fn integ_test() {
+        let post1 = UserPost::new(
+            "John Billy".to_string(),
+            "Gas station here only 4.99 / gal".to_string(), 
+            [47.6720145,-122.3539607], 
+            // vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], 
+            vec![PostType::Gas(GasPrices {price_rating : 3})],
+            None
+        );
+        let mut db = Database::new();
+        db.add_submission(post1);
+        println!("{:?}", db.popular_posts(GetPostFilters {location : [47.6720145,-122.3539607], location_range : 1.0, tags : vec!["gas".to_string()], price_range : 1}));
+    }
+}
