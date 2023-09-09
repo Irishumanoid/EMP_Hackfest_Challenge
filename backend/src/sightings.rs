@@ -24,7 +24,7 @@ pub const UPVOTE_WEIGHT : f64 = 1.0;
 pub const DOWNVOTE_WEIGHT : f64 = 1.0;
 
 pub struct Database {
-    data : Vec<DbEntry>,
+    pub data : Vec<DbEntry>,
 }
 
 #[derive(Clone, std::fmt::Debug)]
@@ -102,14 +102,14 @@ pub struct UserPost {
     pub picture: Option<String>,
 }
 
-pub fn conv_to_pt(tags: Vec<String>, price_rating : i32) -> Vec<PostType> {
-    return tags.iter().map(|tag_string| {
+pub fn conv_to_pt(tags: Vec<String>, price_ratings : Vec<i32>) -> Vec<PostType> {
+    return tags.iter().enumerate().map(|(i, tag_string)| {
         match tag_string.to_lowercase().as_str() {
-            "clothes" => PostType::Clothes(ClothesPrices { price_rating } ),
-            "food" => PostType::Food(FoodPrices { price_rating }),
-            "groceries" => PostType::Gas(GasPrices { price_rating }),
-            "parking" => PostType::Grocery(GroceryPrices { price_rating }),
-            "gas" => PostType::Parking(ParkingPrices { price_rating }),
+            "clothes" => PostType::Clothes(ClothesPrices { price_rating: price_ratings[i] } ),
+            "food" => PostType::Food(FoodPrices { price_rating: price_ratings[i] }),
+            "groceries" => PostType::Gas(GasPrices { price_rating: price_ratings[i] }),
+            "parking" => PostType::Grocery(GroceryPrices { price_rating: price_ratings[i] }),
+            "gas" => PostType::Parking(ParkingPrices { price_rating: price_ratings[i] }),
             _ => panic!("balls"),
         }
     }).collect();
@@ -130,7 +130,7 @@ impl UserPost {
             display_name: post.display_name,
             description: post.description,
             location: Coordinates::new(post.location[0].into(), post.location[1].into()),
-            tags: conv_to_pt(post.tags, post.price),
+            tags: conv_to_pt(post.tags, post.price_rating),
             picture: post.picture,
         }
     }
