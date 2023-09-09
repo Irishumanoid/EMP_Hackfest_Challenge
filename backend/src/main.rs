@@ -64,11 +64,17 @@ fn get_posts(filters: Json<GetPostFilters>) -> (ContentType, String) {
     }
 }
 
+#[options("/<_..>")]
+fn all_options() {
+    /* Intentionally left empty */
+}
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
         .attach(CORS)
         .mount("/", routes![
+            all_options,
             index,
             post_post,
             get_posts,
