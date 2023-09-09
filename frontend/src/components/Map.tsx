@@ -15,10 +15,11 @@ function Map(props: {posts: any[]}) {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    {markers.map((pos, idx) =>
-                        <Marker position={pos}>
+                    {props.posts.map((post, idx) =>
+                        <Marker position={post.location}>
                             <Popup>
-                                hi
+                                <h2>{post.displayName}</h2>
+                                <p>{post.description}</p>
                             </Popup>
                         </Marker>
                     )}
