@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Map from "./components/Map";
-import { GET, POST } from "./util/apiHandler";
-import { Button } from "@mui/material";
 import { Post } from "./types/post";
 
 function App() {
@@ -22,56 +20,48 @@ function App() {
             display_name: "This is a name :o",
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
-            tags: [],
-            price_range: 1,
+            tags: ["gas", "store", "food"],
+            price_range: [4, 1, 2],
           },
           {
             id: 1,
             display_name: "This is a name :o",
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
-            tags: [],
-            price_range: 1,
+            tags: ["gas", "store", "food"],
+            price_range: [4, 1, 2],
           },
           {
             id: 1,
             display_name: "This is a name :o",
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
-            tags: [],
-            price_range: 1,
+            tags: ["gas", "store", "food"],
+            price_range: [4, 1, 2],
           },
           {
             id: 1,
             display_name: "This is a name :o",
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
-            tags: [],
-            price_range: 1,
+            tags: ["gas", "store", "food"],
+            price_range: [4, 1, 2],
           },
           {
             id: 1,
             display_name: "This is a name :o",
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
-            tags: [],
-            price_range: 1,
+            tags: ["gas", "store", "food"],
+            price_range: [4, 1, 2],
           },
           {
             id: 1,
             display_name: "This is a name :o",
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
-            tags: [],
-            price_range: 1,
-          },
-          {
-            id: 1,
-            display_name: "This is a name :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: [],
-            price_range: 1,
+            tags: ["gas", "store", "food"],
+            price_range: [4, 1, 2],
           },
         ]
       }

@@ -4,6 +4,6 @@ export type Post = {
     description: string;
     location: number[];
     tags: string[];
+    price_range: number[];
     picture?: string;
-    price_range: number;
 }
