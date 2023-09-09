@@ -1,0 +1,5 @@
+[global]
+address = "0.0.0.0"
+[global.tls]
+certs = "/etc/letsencrypt/live/chrissytopher.com/fullchain.pem"
+key = "/etc/letsencrypt/live/chrissytopher.com/privkey.pem"
