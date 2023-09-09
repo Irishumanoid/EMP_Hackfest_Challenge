@@ -9,68 +9,72 @@ function App() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post|undefined>(undefined);
 
+  function addLocation(loc: number[]) {
+
+  }
+
   async function refresh() {
     //const res = await POST("/get_posts", {location: [0,0], tags: [], price_rating: 1});
-    const res = {
-      data: {
-        success: true,
-        posts: [
-          {
-            id: 1,
-            display_name: "This is a name :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name2 :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name6 :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-        ]
-      }
-    };
-    console.log(res.data);
-    setPosts(res.data.posts);
+    // const res = {
+    //   data: {
+    //     success: true,
+    //     posts: [
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.7, -122.3328],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name2 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.7, -122.3328],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.7, -122.3328],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.7, -122.3328],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.7, -122.3328],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name6 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.7, -122.3328],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //     ]
+    //   }
+    // };
+    console.log(res.data.data);
+    setPosts(res.data.data);
 
     // TESTING:
-    setSelectedPost(res.data.posts[0]);
+    //setSelectedPost(res.data.posts[0]);
   }
 
   async function upload() {
@@ -87,7 +91,7 @@ function App() {
 
   useEffect(()=>{
     refresh();
-    upload();
+    //upload();
   }, []);
 
   return (

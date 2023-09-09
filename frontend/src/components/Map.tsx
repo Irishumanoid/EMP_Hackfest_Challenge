@@ -8,14 +8,14 @@ import L from 'leaflet';
 import React from 'react';
 
 function SetViewOnClick() {
-    const map = useMapEvent('click', (e) => {
+    const map = useMapEvent('contextmenu', (e) => {
       console.log(e.latlng);
     })
   
     return null
 }
 
-function Map(props: {posts: Post[], setSelectedPost: (post: Post|undefined)=>void}) {
+function Map(props: {posts: Post[], setSelectedPost: (post: Post|undefined)=>void, addLocation: (loc: number[])=>void}) {
     const position : [number, number] = [47.6061, -122.3328]
     const markers : [[number, number]]= [[47.6061, -122.3328]];
 
