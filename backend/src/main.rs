@@ -4,23 +4,14 @@ use serde::{Deserialize, Serialize};
 mod sightings;
 mod macros;
 
+use sightings::UserPost;
+
 #[macro_use]
 extern crate rocket;
-
 
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct UserPost {
-    pub display_name: String,
-    pub description: String,
-    pub location: [f32; 2],
-    pub tags: Vec<String>,
-    pub price: [f32; 2],
-    pub picture: Option<String>,
 }
 
 #[post("/backend/post_post", data = "<post>")]
@@ -31,6 +22,7 @@ fn post_post(post: Json<UserPost>) {
 #[derive(Deserialize)]
 struct GetPostFilters {
     location: [f32; 2],
+    location_range: f32,
     tags: Vec<String>,
     price_range: i32,
 }
