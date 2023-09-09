@@ -32,7 +32,7 @@ function Sidebar(props: {posts: Post[], selectedPost: Post|undefined, setSelecte
                     </div>
                     <div className="flex flex-col px-4 h-full overflow-y-scroll custom-scrollbar">
                         {props.posts.map((post, index)=>{
-                            return (<SidebarPost key={index} post={post}></SidebarPost>)
+                            return (<SidebarPost key={index} post={post} onClick={()=>props.setSelectedPost(post)}></SidebarPost>)
                         })}
                     </div>
                 </div>
