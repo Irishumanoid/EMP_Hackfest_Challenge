@@ -1,4 +1,4 @@
-
+import { TextField } from "@material-ui/core"
 
 function App() {
 
@@ -24,6 +24,8 @@ function App() {
           <div className="button">Alternate Button</div>
           <div className="button destructive">Destructive Button</div>
         </div>
+
+        <TextField id="outlined-basic" label="Outlined" variant="outlined" />
       </div>
     </>
   )
