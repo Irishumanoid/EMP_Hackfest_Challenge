@@ -7,13 +7,26 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
-
-#[rocket::main]
-async fn main() -> Result<(), rocket::Error> {
-    let _rocket = rocket::build()
-        .mount("/", routes![index])
-        .launch()
-        .await?;
-    Ok(())
+#[derive(Deserialize)]
+pub struct UserPost {
+    pub display_name: String,
+    pub description: String,
+    pub location: [f32; 2],
+    pub tags: Vec<String>,
+    pub price: [f32; 2],
+    pub picture: Option<String>,
 }
 
+#[post("/backend/post_post", data = "<post>")]
+fn post_post(post: Json<UserPost>) {
+    //Miles here
+}
+
+#[launch]
+fn rocket() -> _ {
+    rocket::build()
+        .mount("/", routes![
+            index,
+            post_post,
+        ])
+}
