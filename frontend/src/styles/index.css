@@ -81,3 +81,7 @@ h4 {
 ::-webkit-scrollbar-thumb:hover {
   background: #908e9a;
 }
+
+.mapPopup .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+  background-color: #eae9fe;
+}
