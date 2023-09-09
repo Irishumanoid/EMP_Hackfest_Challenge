@@ -102,18 +102,26 @@ pub struct UserPost {
     pub picture: Option<String>,
 }
 
-pub fn conv_to_pt(tags: Vec<String>, price_ratings : Vec<i32>) -> Vec<PostType> {
-    return tags.iter().enumerate().map(|(i, tag_string)| {
-        match tag_string.to_lowercase().as_str() {
-            "clothes" => PostType::Clothes(ClothesPrices { price_rating: price_ratings[i] } ),
-            "food" => PostType::Food(FoodPrices { price_rating: price_ratings[i] }),
-            "groceries" => PostType::Gas(GasPrices { price_rating: price_ratings[i] }),
-            "parking" => PostType::Grocery(GroceryPrices { price_rating: price_ratings[i] }),
-            "gas" => PostType::Parking(ParkingPrices { price_rating: price_ratings[i] }),
+
+pub fn conv_to_pt(tags: Vec<String>, price_rating : Vec<i32>) -> Vec<PostType> {
+    let mut index = 0;
+    let mut pts = Vec::new();
+    for tag in tags {
+        pts.push(match tag.to_lowercase().as_str() {
+            "clothes" => PostType::Clothes(ClothesPrices {price_rating: price_rating[index]} ),
+            "food" => PostType::Food(FoodPrices { price_rating: price_rating[index] }),
+            "groceries" => PostType::Gas(GasPrices { price_rating: price_rating[index] }),
+            "parking" => PostType::Grocery(GroceryPrices { price_rating: price_rating[index] }),
+            "gas" => PostType::Parking(ParkingPrices { price_rating: price_rating[index] }),
             _ => panic!("balls"),
-        }
-    }).collect();
+        });
+        index += 1;
+    };
+
+    pts
 }
+
+
 
 impl UserPost {
     pub fn new(post: crate::DeprecatedUserPost) -> UserPost {
@@ -256,3 +264,24 @@ pub enum PostType {
     Grocery(GroceryPrices),
     Parking(ParkingPrices),
 }
+
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     #[test]
+//     //Run with -- --nocapture
+//     fn integ_test() {
+//         let post1 = UserPost::new(
+//             "John Billy".to_string(),
+//             "Gas station here only 4.99 / gal".to_string(), 
+//             [47.6720145,-122.3539607], 
+//             // vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], 
+//             vec![PostType::Gas(GasPrices {price_rating : 3})],
+//             None
+//         );
+//         let mut db = Database::new();
+//         db.add_submission(post1);
+//         println!("{:?}", db.popular_posts(GetPostFilters {location : [47.6720145,-122.3539607], location_range : 1.0, tags : vec!["gas".to_string()], price_range : 1}));
+//     }
+// }
