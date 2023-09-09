@@ -1,9 +1,21 @@
-import { Marker, Popup } from 'react-leaflet';
+import { Marker, Popup, useMapEvent } from 'react-leaflet';
 import { MapContainer } from 'react-leaflet/MapContainer'
 import { TileLayer } from 'react-leaflet/TileLayer'
 import "leaflet/dist/leaflet.css";
+import { Post } from '../types/post';
+import { LatLngTuple, marker } from 'leaflet';
+import L from 'leaflet';
+import React from 'react';
 
-function Map(props: {posts: any[]}) {
+function SetViewOnClick() {
+    const map = useMapEvent('click', (e) => {
+      console.log(e.latlng);
+    })
+  
+    return null
+}
+
+function Map(props: {posts: Post[]}) {
     const position : [number, number] = [47.6061, -122.3328]
     const markers : [[number, number]]= [[47.6061, -122.3328]];
 
@@ -16,13 +28,14 @@ function Map(props: {posts: any[]}) {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
                     {props.posts.map((post, idx) =>
-                        <Marker position={post.location}>
-                            <Popup>
-                                <h2>{post.displayName}</h2>
+                        <Marker position={post.location as LatLngTuple}>
+                            <Popup className='mapPopup'>
+                                <h2>{post.display_name}</h2>
                                 <p>{post.description}</p>
                             </Popup>
                         </Marker>
                     )}
+                    <SetViewOnClick/>
                 </MapContainer>
                 
             </div>
