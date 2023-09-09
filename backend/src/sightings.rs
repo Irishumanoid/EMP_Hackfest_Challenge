@@ -11,6 +11,8 @@
 // The score is calculated with upvotes/downvotes/seconds, and also by distance away, and time ago.
 // Similar posts are also clusterd together and their reputations are merged. However, the posts still stay seperate.
 
+use core::panic;
+
 use rocket::time::{PrimitiveDateTime, Duration};
 
 use crate::macros::hypot;
@@ -66,14 +68,14 @@ impl Database {
     pub fn add_submission(&mut self, submission : UserPost) {
         self.data.push(DbEntry{ post : submission, stats : Stats::new(), id : self.data.len() as i32 });
     }
-    pub fn popular_posts(&self, filters : GetPostFilters, range : f64) -> Vec<DbEntry> {
-        let mut result = self.data
-        .iter()
-        .filter(|i| i.post.check_if_in_filter(filters))
-        .collect::<Vec<DbEntry>>();
-        result.sort_by(|a, b| b.get_score().partial_cmp(&a.get_score()).unwrap());
-        result
-    }
+    // pub fn popular_posts(&self, filters : GetPostFilters, range : f64) -> Vec<DbEntry> {
+    //     let mut result = self.data
+    //     .iter()
+    //     .filter(|i| i.post.check_if_in_filter(filters))
+    //     .collect::<Vec<DbEntry>>();
+    //     result.sort_by(|a, b| b.get_score().partial_cmp(&a.get_score()).unwrap());
+    //     result
+    // }
 }
 
 #[derive(Clone)]
@@ -85,40 +87,53 @@ pub struct UserPost {
     pub picture: Option<String>,
 }
 
+fn conv_to_pt(tags: Vec<String>, price_rating : i32) -> Vec<PostType> {
+    return tags.iter().map(|tag_string| {
+        match tag_string.to_lowercase().as_str() {
+            "clothes" => PostType::Clothes(ClothesPrices { price_rating } ),
+            "food" => PostType::Food(FoodPrices { price_rating }),
+            "groceries" => PostType::Gas(GasPrices { price_rating }),
+            "parking" => PostType::Grocery(GroceryPrices { price_rating }),
+            "gas" => PostType::Parking(ParkingPrices { price_rating }),
+            _ => panic!("balls"),
+        }
+    }).collect();
+}
+
 impl UserPost {
     pub fn new(display_name : String, description : String, location : [f64; 2], tags : Vec<PostType>, picture : Option<String>) -> UserPost {
         UserPost {
             display_name,
             description,
-            location : Coordinates::new(location[0], location[1]),
+            location: Coordinates::new(location[0], location[1]),
             tags,
             picture,
         }
     }
-    pub fn check_if_type_in(&self, tags : &Vec<String>) -> bool {
-        crate::macros::bool_or(
-            tags.iter().map(|t: String | {
-                return match (t) {
-                    PostType::Clothes(_) => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("clothes"),
-                    PostType::Gas(_)     => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("gas"),
-                    PostType::Food(_)    => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("food"),
-                    PostType::Grocery(_) => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("grocery"),
-                    PostType::Parking(_) => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("parking"),
-                }
-            }
-            .collect::<Vec<bool>>())
-        )
-    }
+    // pub fn check_if_type_in(&self, tags : &Vec<String>) -> bool {
+    //     crate::macros::bool_or(
+    //         tags.iter().map(|t: String | {
+    //             return match (t) {
+    //                 PostType::Clothes(_) => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("clothes"),
+    //                 PostType::Gas(_)     => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("gas"),
+    //                 PostType::Food(_)    => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("food"),
+    //                 PostType::Grocery(_) => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("grocery"),
+    //                 PostType::Parking(_) => tags.iter().map(|i| i.to_lowercase()).collect<Vec<String>>.contains("parking"),
+    //             }
+    //         }
+    //         .collect::<Vec<bool>>())
+    //     )
+    // }
     pub fn check_if_price_in_range(&self, price_range : i32) -> bool {
         true
         //TODO
     }
-    pub fn check_if_in_filter(&self, filter : &GetPostFilters) -> bool {
-        //Check if any of the posttypes are in the tags; O(n) call to an O(n) function; O(n^2)
-        self.check_if_type_in(&filter.tags) 
-        && Coordinates::new(filter.location[0], filter.location[1]).in_range(&self.location, filter.location_range)
-        && self.check_if_price_in_range(filter.price_range)
-    }
+    // pub fn check_if_in_filter(&self, filter : &GetPostFilters) -> bool {
+    //     //Check if any of the posttypes are in the tags; O(n) call to an O(n) function; O(n^2)
+    //     self.check_if_type_in(&filter.tags) 
+    //     && Coordinates::new(filter.location[0], filter.location[1]).in_range(&self.location, filter.location_range)
+    //     && self.check_if_price_in_range(filter.price_range)
+    // }
 }
 
 #[derive(Clone)]
@@ -192,25 +207,29 @@ pub struct ClothesPrices {
 
 #[derive(Clone)]
 pub struct ParkingPrices {
-    pub avg_hourly : f64,
-    pub avg_daily  : f64,
-    pub avg_monthly: f64,
+    pub price_rating : i32,
+    //pub avg_hourly : f64,
+    //pub avg_daily  : f64,
+    //pub avg_monthly: f64,
 }
 
 #[derive(Clone)]
 pub struct GasPrices {
-    pub per_gallon : f64,
-    pub permium_per_gallon : f64,
-    pub diesel_per_gallon : f64,
+    pub price_rating : i32,
+    //pub per_gallon : f64,
+    //pub permium_per_gallon : f64,
+    //pub diesel_per_gallon : f64,
 }
 
 #[derive(Clone)]
 pub struct FoodPrices {
-    pub avg_food_per_person : f64,
-    pub min_food_per_person : f64,
+    pub price_rating : i32,
+    //pub avg_food_per_person : f64,
+    //pub min_food_per_person : f64,
 }
 
 //TODO: Make each of the fields optional and only filter with things that have the optional field filled in
+#[derive(Clone)]
 pub struct GroceryPrices {
     pub price_rating : i32, //1-5
 }
@@ -225,14 +244,14 @@ pub enum PostType {
 }
 
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    //Run with -- --nocapture
-    fn integ_test() {
-        post1 = UserPost::new("John Billy", "Gas station here only 4.99 / gal", Coordinates::new(47.6720145,-122.3539607), vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], None);
-        db = Database::new();
-        db.add_submission(post1);
-        println!(db.get_popular_posts(GetPostFilters {location : [47.6720145,-122.3539607], location_range : 1.0, tags : vec!["gas".to_string()], price_range : 1}));
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     #[test]
+//     //Run with -- --nocapture
+//     fn integ_test() {
+//         post1 = UserPost::new("John Billy", "Gas station here only 4.99 / gal", Coordinates::new(47.6720145,-122.3539607), vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], None);
+//         db = Database::new();
+//         db.add_submission(post1);
+//         println!(db.get_popular_posts(GetPostFilters {location : [47.6720145,-122.3539607], location_range : 1.0, tags : vec!["gas".to_string()], price_range : 1}));
+//     }
+// }

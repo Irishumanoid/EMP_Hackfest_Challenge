@@ -1,13 +1,13 @@
 use pic_handler::uploader;
 use rocket::{serde::json::Json, http::{ContentType, Header}, fairing::{Fairing, Info, Kind}, Request, Response, fs::FileServer};
 use serde::{Deserialize, Serialize};
+use serde_json::{Value, from_str};
 
 
 mod pic_handler;
 mod sightings;
 mod macros;
 
-use sightings::UserPost;
 
 #[macro_use]
 extern crate rocket;
@@ -17,15 +17,25 @@ fn index() -> &'static str {
     "Landing page"
 }
 
+
+#[derive(Deserialize, Serialize)]
+pub struct UserPost {
+    pub display_name: String,
+    pub description: String,
+    pub location: [f32; 2],
+    pub tags: Vec<String>,
+    pub price: [f32; 2],
+    pub picture: Option<String>,
+}
+
 #[post("/backend/post_post", data = "<post>")]
 fn post_post(post: Json<UserPost>) {
-    //Miles here
+
 }
 
 #[derive(Deserialize)]
 struct GetPostFilters {
     location: [f32; 2],
-    location_range: f32,
     tags: Vec<String>,
     price_range: i32,
 }
@@ -45,21 +55,25 @@ pub fn sort_ports() -> Vec<UserPost> {
     todo!();
 }
 
-#[post["/backend/get_posts", data = "<filters>"]]
-fn get_posts(filters: Json<GetPostFilters>) -> (ContentType, String) {
-    let posts = sort_ports();
-
-    let serialized_posts = serde_json::to_string(&APIResponse {success: true, error: None, data: Some(posts)});
-    return match serialized_posts {
-        Ok(posts_string) => (ContentType::JSON, posts_string),
-        Err(e) => {println!("{e}"); return (ContentType::JSON, error_string("something was wrong on the server side".to_string()));}
-    }
-}
-
 #[options("/<_..>")]
 fn all_options() {
     /* Intentionally left empty */
 }
+
+
+#[post["/backend/get_posts", data = "<filters>"]]
+fn get_posts(filters: Json<GetPostFilters>) -> (ContentType, String) {
+    let posts = sort_ports();
+
+    let resp = &APIResponse {success: true, error: None, data: Some(posts)};
+    let serialized_posts = serde_json::to_string(&resp);
+    
+    return match serialized_posts {
+        Ok(posts_string) => {(ContentType::JSON, posts_string)},
+        Err(e) => {println!("{e}"); return (ContentType::JSON, error_string("something was wrong on the server side".to_string()));}
+    }
+}
+
 
 #[launch]
 fn rocket() -> _ {
