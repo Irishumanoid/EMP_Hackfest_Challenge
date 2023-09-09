@@ -1,3 +1,6 @@
+use rocket::serde::json::Json;
+use serde::Deserialize;
+
 #[macro_use]
 extern crate rocket;
 
