@@ -1,7 +1,10 @@
+use std::sync::{Mutex, Arc};
+
 use pic_handler::uploader;
-use rocket::{serde::json::Json, http::{ContentType, Header}, fairing::{Fairing, Info, Kind}, Request, Response, fs::FileServer};
+use rocket::{serde::json::Json, http::{ContentType, Header}, fairing::{Fairing, Info, Kind}, Request, Response, fs::FileServer, State};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, from_str};
+use sightings::Database;
 
 
 mod pic_handler;
@@ -19,18 +22,30 @@ fn index() -> &'static str {
 
 
 #[derive(Deserialize, Serialize)]
-pub struct UserPost {
+pub struct DeprecatedUserPost {
     pub display_name: String,
     pub description: String,
     pub location: [f32; 2],
     pub tags: Vec<String>,
-    pub price: [f32; 2],
+    pub price: i32,
     pub picture: Option<String>,
 }
 
-#[post("/backend/post_post", data = "<post>")]
-fn post_post(post: Json<UserPost>) {
+struct ServerState {
+    database: Mutex<Database>,
 
+}
+
+impl ServerState {
+    pub fn new() -> ServerState {
+        ServerState { database: Mutex::new(Database::new()) }
+    }
+}
+
+#[post("/backend/post_post", data = "<post>")]
+fn post_post(post: Json<DeprecatedUserPost>, server_arc: &State<Arc<Mutex<ServerState>>>) {
+    let server = server_arc.lock().unwrap();
+    server.database.lock().unwrap().add_submission(sightings::UserPost::new(post.0));
 }
 
 #[derive(Deserialize)]
@@ -51,7 +66,7 @@ pub fn error_string(message: String) -> String {
     return format!("{{\"success\":true, \"error\": \"{message}\"}}");
 }
 
-pub fn sort_ports() -> Vec<UserPost> {
+pub fn sort_ports() -> Vec<sightings::UserPost> {
     todo!();
 }
 
@@ -77,7 +92,9 @@ fn get_posts(filters: Json<GetPostFilters>) -> (ContentType, String) {
 
 #[launch]
 fn rocket() -> _ {
+    let server = Arc::new(Mutex::new(ServerState::new()));
     rocket::build()
+        .manage(server.clone())
         .attach(CORS)
         .mount(
             "/images",

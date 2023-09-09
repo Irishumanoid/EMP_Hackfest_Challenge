@@ -14,6 +14,7 @@
 use core::panic;
 
 use rocket::time::{PrimitiveDateTime, Duration};
+use serde::Serialize;
 
 use crate::macros::hypot;
 
@@ -78,7 +79,7 @@ impl Database {
     // }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct UserPost {
     pub display_name: String,
     pub description: String,
@@ -87,7 +88,7 @@ pub struct UserPost {
     pub picture: Option<String>,
 }
 
-fn conv_to_pt(tags: Vec<String>, price_rating : i32) -> Vec<PostType> {
+pub fn conv_to_pt(tags: Vec<String>, price_rating : i32) -> Vec<PostType> {
     return tags.iter().map(|tag_string| {
         match tag_string.to_lowercase().as_str() {
             "clothes" => PostType::Clothes(ClothesPrices { price_rating } ),
@@ -101,13 +102,13 @@ fn conv_to_pt(tags: Vec<String>, price_rating : i32) -> Vec<PostType> {
 }
 
 impl UserPost {
-    pub fn new(display_name : String, description : String, location : [f64; 2], tags : Vec<PostType>, picture : Option<String>) -> UserPost {
+    pub fn new(post: crate::DeprecatedUserPost) -> UserPost {
         UserPost {
-            display_name,
-            description,
-            location: Coordinates::new(location[0], location[1]),
-            tags,
-            picture,
+            display_name: post.display_name,
+            description: post.description,
+            location: Coordinates::new(post.location[0].into(), post.location[1].into()),
+            tags: conv_to_pt(post.tags, post.price),
+            picture: post.picture,
         }
     }
     // pub fn check_if_type_in(&self, tags : &Vec<String>) -> bool {
@@ -136,7 +137,7 @@ impl UserPost {
     // }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct Coordinates {
     pub latitude  : f64,
     pub longitude : f64,
@@ -200,12 +201,12 @@ impl Coordinates {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct ClothesPrices {
     pub price_rating : i32, //1-5
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct ParkingPrices {
     pub price_rating : i32,
     //pub avg_hourly : f64,
@@ -213,7 +214,7 @@ pub struct ParkingPrices {
     //pub avg_monthly: f64,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct GasPrices {
     pub price_rating : i32,
     //pub per_gallon : f64,
@@ -221,7 +222,7 @@ pub struct GasPrices {
     //pub diesel_per_gallon : f64,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct FoodPrices {
     pub price_rating : i32,
     //pub avg_food_per_person : f64,
@@ -229,12 +230,12 @@ pub struct FoodPrices {
 }
 
 //TODO: Make each of the fields optional and only filter with things that have the optional field filled in
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct GroceryPrices {
     pub price_rating : i32, //1-5
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub enum PostType {
     Clothes(ClothesPrices),
     Gas(GasPrices),
