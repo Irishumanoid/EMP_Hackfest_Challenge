@@ -1,5 +1,9 @@
+use rocket::time::PrimitiveDateTime;
+
+use crate::macros::hypot;
+
 pub struct Database {
-    data : mut Vec<(Submission, Stats)>;
+    data : Vec<(Submission, Stats)>,
 }
 
 pub struct Coordinates {
@@ -21,10 +25,9 @@ impl Stats {
             downvotes : 0,
             agree : 0,
             disagree : 0,
-            net_votes : 0,
         }
     }
-    pub fn get_net_votes(&self) -> i32 {
+    pub fn get_net_votes(&self) -> u32 {
         self.upvotes - self.downvotes + self.agree * 2 - self.disagree * 2
     }
 }
@@ -36,17 +39,17 @@ impl Coordinates {
             longitude : long,
         }
     }
-    pub fn new(latdeg : f64, latmin : f64, latsec : f64, longdeg : f64, longmin : f64, longsec : f64) -> Coordinates {
+    pub fn new_precise(latdeg : f64, latmin : f64, latsec : f64, longdeg : f64, longmin : f64, longsec : f64) -> Coordinates {
         Coordinates {
-            latitude : latdeg + latmin/60 + latsec/3600,
-            longitude : longdeg + longmin/60 + longsec/3600,
+            latitude : latdeg + latmin/60.0 + latsec/3600.0,
+            longitude : longdeg + longmin/60.0 + longsec/3600.0,
         }
     }
     pub fn in_range(&self, other : &Coordinates, range : f64) -> bool {
-        deg_dist(self, other) <= range
+        self.deg_dist(other) <= range
     }
     pub fn deg_dist(&self, other : &Coordinates) -> f64 {
-        macros::hypot(self.latitude - other.latitude, self.longitude - other.longitude)
+        hypot(self.latitude - other.latitude, self.longitude - other.longitude)
     }
     pub fn deg_to_miles(deg : f64) -> f64 {
         deg * 69.0
@@ -105,5 +108,5 @@ pub struct Submission {
     pub location    : Coordinates,
     pub time        : PrimitiveDateTime,
     pub post_string : String,
-    pub post_info   : PostInfo,
+    // pub post_info   : PostInfo,
 }

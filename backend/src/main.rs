@@ -1,6 +1,9 @@
 use rocket::serde::json::Json;
 use serde::Deserialize;
 
+mod sightings;
+mod macros;
+
 #[macro_use]
 extern crate rocket;
 
