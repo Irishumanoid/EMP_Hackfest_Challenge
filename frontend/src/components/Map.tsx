@@ -15,7 +15,7 @@ function SetViewOnClick() {
     return null
 }
 
-function Map(props: {posts: Post[]}) {
+function Map(props: {posts: Post[], setSelectedPost: (post: Post|undefined)=>void}) {
     const position : [number, number] = [47.6061, -122.3328]
     const markers : [[number, number]]= [[47.6061, -122.3328]];
 
@@ -28,7 +28,11 @@ function Map(props: {posts: Post[]}) {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
                     {props.posts.map((post, idx) =>
-                        <Marker position={post.location as LatLngTuple}>
+                        <Marker position={post.location as LatLngTuple} eventHandlers={{
+                            click: (e) => {
+                              props.setSelectedPost(post);
+                            },
+                          }}>
                             <Popup className='mapPopup'>
                                 <h2>{post.display_name}</h2>
                                 <p>{post.description}</p>

@@ -25,7 +25,7 @@ function App() {
           },
           {
             id: 1,
-            display_name: "This is a name :o",
+            display_name: "This is a name2 :o",
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
             tags: ["gas", "store", "food"],
@@ -57,7 +57,7 @@ function App() {
           },
           {
             id: 1,
-            display_name: "This is a name :o",
+            display_name: "This is a name6 :o",
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
             tags: ["gas", "store", "food"],
@@ -99,7 +99,7 @@ function App() {
         <div className="w-full h-full overflow-hidden">
           {/* <Button variant="contained" onClick={()=>setSidebarOpen(!sidebarOpen)}>Toggle Sidebar</Button> */}
           {/* <Button onClick={()=>POST("/get_posts")}></Button> */}
-          <Map posts={posts}/>
+          <Map posts={posts} setSelectedPost={setSelectedPost}/>
           
         </div>
       </div>
