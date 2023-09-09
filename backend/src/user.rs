@@ -24,7 +24,6 @@ impl<'r> FromData<'r> for User {
 
         // get user data from session by parsing some json token
 
-
         if let Ok(user) = serde_json::from_str::<User>(&auth_vals) {
             Outcome::Success(user)
         } else {
