@@ -1,6 +1,9 @@
-use rocket::{serde::json::Json, http::ContentType};
+use pic_handler::uploader;
+use rocket::{serde::json::Json, http::{ContentType, Header}, fairing::{Fairing, Info, Kind}, Request, Response, fs::FileServer};
 use serde::{Deserialize, Serialize};
 
+
+mod pic_handler;
 mod sightings;
 mod macros;
 
@@ -11,7 +14,7 @@ extern crate rocket;
 
 #[get("/")]
 fn index() -> &'static str {
-    "Hello, world!"
+    "Landing page"
 }
 
 #[post("/backend/post_post", data = "<post>")]
@@ -53,12 +56,53 @@ fn get_posts(filters: Json<GetPostFilters>) -> (ContentType, String) {
     }
 }
 
+#[options("/<_..>")]
+fn all_options() {
+    /* Intentionally left empty */
+}
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
+        .attach(CORS)
+        .mount(
+            "/images",
+            FileServer::from("images"),
+        )
         .mount("/", routes![
+            all_options,
             index,
             post_post,
             get_posts,
+            uploader,
         ])
+}
+
+pub struct CORS;
+
+#[rocket::async_trait]
+impl Fairing for CORS {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add CORS headers to responses",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
+        if let Some(hostname) = request.headers().get_one("origin") {
+            if hostname.contains("http://localhost:") || hostname.contains("https://localhost:")
+            {
+                response.set_header(Header::new("Access-Control-Allow-Origin", hostname));
+            }
+        } else {
+            response.set_header(Header::new("Access-Control-Allow-Origin", "nothing lmao"));
+        }
+        response.set_header(Header::new(
+            "Access-Control-Allow-Methods",
+            "POST, GET, PATCH, OPTIONS",
+        ));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
 }

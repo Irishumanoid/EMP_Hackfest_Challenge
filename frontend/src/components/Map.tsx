@@ -3,9 +3,9 @@ import { MapContainer } from 'react-leaflet/MapContainer'
 import { TileLayer } from 'react-leaflet/TileLayer'
 import "leaflet/dist/leaflet.css";
 
-function Map() {
+function Map(props: {posts: any[]}) {
     const position : [number, number] = [47.6061, -122.3328]
-    const markers : [[number, number]]= [[47.6061, -122.3328], [47.7, -122.3328], [47.6061, -122.1]];
+    const markers : [[number, number]]= [[47.6061, -122.3328]];
 
     return (
         <>
@@ -15,10 +15,11 @@ function Map() {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    {markers.map((pos, idx) =>
-                        <Marker position={pos}>
+                    {props.posts.map((post, idx) =>
+                        <Marker position={post.location}>
                             <Popup>
-                                hi
+                                <h2>{post.displayName}</h2>
+                                <p>{post.description}</p>
                             </Popup>
                         </Marker>
                     )}
