@@ -1,17 +1,19 @@
 use rocket::{serde::json::Json, http::ContentType};
 use serde::{Deserialize, Serialize};
 
+
+mod pic_handler;
 mod sightings;
 mod macros;
 
 #[macro_use]
 extern crate rocket;
 
-
 #[get("/")]
 fn index() -> &'static str {
-    "Hello, world!"
+    "Landing page"
 }
+
 
 #[derive(Deserialize, Serialize)]
 pub struct UserPost {
