@@ -27,7 +27,7 @@ pub struct DeprecatedUserPost {
     pub description: String,
     pub location: [f32; 2],
     pub tags: Vec<String>,
-    pub price: i32,
+    pub price_rating: Vec<i32>,
     pub picture: Option<String>,
 }
 
@@ -66,8 +66,10 @@ pub fn error_string(message: String) -> String {
     return format!("{{\"success\":true, \"error\": \"{message}\"}}");
 }
 
-pub fn sort_ports() -> Vec<sightings::UserPost> {
-    todo!();
+pub fn sort_posts(db: &Database) -> Vec<sightings::UserPost> {
+    db.data.iter().map(|db_entry| {
+        db_entry.post.clone()
+    }).collect()
 }
 
 #[options("/<_..>")]
@@ -77,8 +79,9 @@ fn all_options() {
 
 
 #[post["/backend/get_posts", data = "<filters>"]]
-fn get_posts(filters: Json<GetPostFilters>) -> (ContentType, String) {
-    let posts = sort_ports();
+fn get_posts(filters: Json<GetPostFilters>, server_arc: &State<Arc<Mutex<ServerState>>>) -> (ContentType, String) {
+    let server = server_arc.lock().unwrap();
+    let posts = sort_posts(&server.database.lock().unwrap());
 
     let resp = &APIResponse {success: true, error: None, data: Some(posts)};
     let serialized_posts = serde_json::to_string(&resp);
