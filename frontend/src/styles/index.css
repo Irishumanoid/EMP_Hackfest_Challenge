@@ -23,12 +23,8 @@ html.dark {
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
+  @apply font-semibold text-primary-400 hover:text-primary-500;
   text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
 }
 
 h1 {
@@ -56,10 +52,10 @@ h4 {
   @apply inline-flex items-center justify-center px-3 py-2 font-semibold whitespace-nowrap rounded-lg text-dark-100 hover:text-dark-500 dark:text-light-100 dark:hover:text-light-200 transition cursor-pointer;
 }
 .button.primary {
-  @apply bg-violet-600 hover:bg-violet-700 text-light-100 hover:text-light-200;
+  @apply bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-light-100 hover:text-light-200;
 }
 .button.secondary {
-  @apply border-2 border-violet-600 hover:border-violet-700;
+  @apply border-2 border-primary-700 hover:border-primary-700;
 }
 .button.destructive {
   @apply border-2 border-red-500 hover:border-red-600;
