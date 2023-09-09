@@ -102,18 +102,26 @@ pub struct UserPost {
     pub picture: Option<String>,
 }
 
-pub fn conv_to_pt(tags: Vec<String>, price_ratings : Vec<i32>) -> Vec<PostType> {
-    return tags.iter().enumerate().map(|(i, tag_string)| {
-        match tag_string.to_lowercase().as_str() {
-            "clothes" => PostType::Clothes(ClothesPrices { price_rating: price_ratings[i] } ),
-            "food" => PostType::Food(FoodPrices { price_rating: price_ratings[i] }),
-            "groceries" => PostType::Gas(GasPrices { price_rating: price_ratings[i] }),
-            "parking" => PostType::Grocery(GroceryPrices { price_rating: price_ratings[i] }),
-            "gas" => PostType::Parking(ParkingPrices { price_rating: price_ratings[i] }),
+
+pub fn conv_to_pt(tags: Vec<String>, price_rating : Vec<i32>) -> Vec<PostType> {
+    let mut index = 0;
+    let mut pts = Vec::new();
+    for tag in tags {
+        pts.push(match tag.to_lowercase().as_str() {
+            "clothes" => PostType::Clothes(ClothesPrices {price_rating: price_rating[index]} ),
+            "food" => PostType::Food(FoodPrices { price_rating: price_rating[index] }),
+            "groceries" => PostType::Gas(GasPrices { price_rating: price_rating[index] }),
+            "parking" => PostType::Grocery(GroceryPrices { price_rating: price_rating[index] }),
+            "gas" => PostType::Parking(ParkingPrices { price_rating: price_rating[index] }),
             _ => panic!("balls"),
-        }
-    }).collect();
+        });
+        index += 1;
+    };
+
+    pts
 }
+
+
 
 impl UserPost {
     pub fn from(display_name : String, description : String, location : [f64; 2], tags : Vec<PostType>, picture : Option<String>) -> UserPost {
