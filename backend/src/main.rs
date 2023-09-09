@@ -67,5 +67,6 @@ fn rocket() -> _ {
         .mount("/", routes![
             index,
             post_post,
+            get_posts,
         ])
 }
