@@ -39,7 +39,7 @@ pub fn uploader(mut data: Form<Picture<'_>>) -> (ContentType, String) {
     let mut rng = rand::thread_rng();
     let id = rng.gen::<u32>();
 
-    let url = format!("localhost:8000/image/{}.{}", id, data.extension);
+    let url = format!("https://chrissytopher.com:8000/images/{}.{}", id, data.extension);
     let extension = data.extension.clone();
     block_on(save_image(&mut data.image, url.clone(), extension));
     let serialized_posts = serde_json::to_string(&APIResponse {success: true, error: None, data: Some(format!("{{url:\"{}\"}}", url))});

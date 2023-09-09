@@ -1,5 +1,5 @@
 use pic_handler::uploader;
-use rocket::{serde::json::Json, http::{ContentType, Header}, fairing::{Fairing, Info, Kind}, Request, Response};
+use rocket::{serde::json::Json, http::{ContentType, Header}, fairing::{Fairing, Info, Kind}, Request, Response, fs::FileServer};
 use serde::{Deserialize, Serialize};
 
 
@@ -73,6 +73,10 @@ fn all_options() {
 fn rocket() -> _ {
     rocket::build()
         .attach(CORS)
+        .mount(
+            "/images",
+            FileServer::from("images"),
+        )
         .mount("/", routes![
             all_options,
             index,
