@@ -3,9 +3,9 @@ import { MapContainer } from 'react-leaflet/MapContainer'
 import { TileLayer } from 'react-leaflet/TileLayer'
 import "leaflet/dist/leaflet.css";
 
-function Map() {
+function Map(props: {posts: any[]}) {
     const position : [number, number] = [47.6061, -122.3328]
-    const markers : [[number, number]]= [[47.6061, -122.3328], [47.7, -122.3328], [47.6061, -122.1]];
+    const markers : [[number, number]]= [[47.6061, -122.3328]];
 
     return (
         <>
