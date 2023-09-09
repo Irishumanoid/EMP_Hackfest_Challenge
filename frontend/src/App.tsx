@@ -10,16 +10,21 @@ function App() {
 
   async function Refresh()
   {
-    //const res = await GET("/get_posts");
+    //const res = await POST("/get_posts", {data: {location: [0,0], tags: [], price_range: 1}});
     const res = {
       data: {
         success: true,
         posts: [
           {
-            description: "testing description",
+            description: "testing descriptionas dfadsfjklasdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
             displayName: "name"
           },
+          {
+            description: "this is a description and it has some words in it",
+            location: [47.6061, -122.3328],
+            displayName: "This is a name"
+          }
         ]
       }
     };
@@ -36,7 +41,7 @@ function App() {
       
        
       <div className="w-full h-full overflow-hidden relative flex flex-row">
-        <Sidebar></Sidebar>
+        <Sidebar posts={posts}></Sidebar>
         <div className="w-full h-full overflow-hidden">
           {/* <Button variant="contained" onClick={()=>setSidebarOpen(!sidebarOpen)}>Toggle Sidebar</Button> */}
           {/* <Button onClick={()=>POST("/get_posts")}></Button> */}
