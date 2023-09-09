@@ -25,7 +25,7 @@ function Sidebar(props: {posts: Post[], selectedPost: Post|undefined, setSelecte
                             <div className="text-sm mt-1">Google Maps: <a href={`https://maps.google.com/?q=${props.selectedPost.location[0]},${props.selectedPost.location[1]}`} target="_blank" className="font-normal">{props.selectedPost.location[0]}, {props.selectedPost.location[1]}</a></div>
                             <div className="flex flex-wrap text-lg font-semibold gap-1 my-2">
                                 {props.selectedPost.tags.map((tag, index)=>
-                                    <div key={index} className="bg-light-500 px-2 rounded">{tag}: <span className="text-green-600 font-extrabold">{'$ '.repeat(props.selectedPost?.price_range[index]||0)}</span></div>
+                                    <div key={index} className="bg-light-500 px-2 rounded">{tag}: <span className="text-green-600 font-extrabold">{'$ '.repeat(props.selectedPost?.price_rating[index]||0)}</span></div>
                                 )}
                             </div>
                         </div>}

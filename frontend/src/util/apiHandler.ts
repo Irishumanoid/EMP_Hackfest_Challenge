@@ -6,8 +6,8 @@ export async function GET(url: string, config?: AxiosRequestConfig<any>): Promis
     return fetch('GET', url, config);
 }
 
-export async function POST(url: string, config?: AxiosRequestConfig<any>): Promise<AxiosResponse> {
-    return fetch('POST', url, config);
+export async function POST(url: string, data: any, config?: AxiosRequestConfig<any>): Promise<AxiosResponse> {
+    return fetch('POST', url, {...config, data});
 }
 
 export async function fetch(method: string, url: string, config?: AxiosRequestConfig<any>): Promise<AxiosResponse> {

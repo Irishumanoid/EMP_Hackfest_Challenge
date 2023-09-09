@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Map from "./components/Map";
 import { Post } from "./types/post";
+import { POST } from "./util/apiHandler";
 
 function App() {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post|undefined>(undefined);
 
-  async function Refresh()
-  {
-    //const res = await POST("/get_posts", {data: {location: [0,0], tags: [], price_range: 1}});
+  async function refresh() {
+    //const res = await POST("/get_posts", {location: [0,0], tags: [], price_rating: 1});
     const res = {
       data: {
         success: true,
@@ -21,7 +21,7 @@ function App() {
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
             tags: ["gas", "store", "food"],
-            price_range: [4, 1, 2],
+            price_rating: [4, 1, 2],
           },
           {
             id: 1,
@@ -29,7 +29,7 @@ function App() {
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
             tags: ["gas", "store", "food"],
-            price_range: [4, 1, 2],
+            price_rating: [4, 1, 2],
           },
           {
             id: 1,
@@ -37,7 +37,7 @@ function App() {
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
             tags: ["gas", "store", "food"],
-            price_range: [4, 1, 2],
+            price_rating: [4, 1, 2],
           },
           {
             id: 1,
@@ -45,7 +45,7 @@ function App() {
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
             tags: ["gas", "store", "food"],
-            price_range: [4, 1, 2],
+            price_rating: [4, 1, 2],
           },
           {
             id: 1,
@@ -53,7 +53,7 @@ function App() {
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
             tags: ["gas", "store", "food"],
-            price_range: [4, 1, 2],
+            price_rating: [4, 1, 2],
           },
           {
             id: 1,
@@ -61,7 +61,7 @@ function App() {
             description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
             location: [47.7, -122.3328],
             tags: ["gas", "store", "food"],
-            price_range: [4, 1, 2],
+            price_rating: [4, 1, 2],
           },
         ]
       }
@@ -73,8 +73,21 @@ function App() {
     setSelectedPost(res.data.posts[0]);
   }
 
+  async function upload() {
+    var res = await POST("/post_post", {
+        display_name: "Bongos Restaurant", 
+        description: "I bought some jerk chicken for like $7 and thats pretty cool i would rate the taste 9/10! Def a hidden gem of seattle!", 
+        location: [47.6766866,-122.3470622], 
+        tags: ["Food"], 
+        price_rating: [2]
+    });
+    console.log(res);
+    await refresh();
+  }
+
   useEffect(()=>{
-    Refresh();
+    refresh();
+    upload();
   }, []);
 
   return (
