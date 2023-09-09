@@ -1,19 +1,32 @@
-import { Marker } from "leaflet"
+import { Marker, Popup } from 'react-leaflet';
 import { MapContainer } from 'react-leaflet/MapContainer'
 import { TileLayer } from 'react-leaflet/TileLayer'
-import { useMap } from 'react-leaflet/hooks'
+import "leaflet/dist/leaflet.css";
 
 function Map() {
-    const position : [number, number] = [51.505, -0.09]
+    const position : [number, number] = [47.6061, -122.3328]
+    const markers : [[number, number]]= [[47.6061, -122.3328], [47.7, -122.3328], [47.6061, -122.1]];
 
     return (
         <>
-            <MapContainer center={position} zoom={13} scrollWheelZoom={false}>
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+            <div style={{ height : "100%" }}>
+                <MapContainer center={position} zoom={13} scrollWheelZoom={true} style={{ height: "100%", minHeight: "100%" }}>
+                    <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {markers.map((pos, idx) =>
+                        <Marker position={pos}>
+                            <Popup>
+                                hi
+                            </Popup>
+                        </Marker>
+                    )}
                 </MapContainer>
+                
+            </div>
         </>
     )
 }
+
+export default Map

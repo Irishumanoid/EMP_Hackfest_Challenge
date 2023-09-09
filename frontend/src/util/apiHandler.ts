@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios"
 
-export const API_URL = '/api'
+export const API_URL = 'chrissytopher.com:8000/backend'
 
 export async function GET(url: string, config?: AxiosRequestConfig<any>): Promise<AxiosResponse> {
     return fetch('GET', url, config);
