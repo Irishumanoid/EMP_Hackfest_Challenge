@@ -49,7 +49,7 @@ fn post_post(post: Json<DeprecatedUserPost>, server_arc: &State<Arc<Mutex<Server
 }
 
 #[derive(Deserialize)]
-struct GetPostFilters {
+pub struct GetPostFilters {
     location: [f64; 2],
     location_range: f64, //miles
     tags: Vec<String>,

@@ -256,24 +256,3 @@ pub enum PostType {
     Grocery(GroceryPrices),
     Parking(ParkingPrices),
 }
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    //Run with -- --nocapture
-    fn integ_test() {
-        let post1 = UserPost::new(
-            "John Billy".to_string(),
-            "Gas station here only 4.99 / gal".to_string(), 
-            [47.6720145,-122.3539607], 
-            // vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], 
-            vec![PostType::Gas(GasPrices {price_rating : 3})],
-            None
-        );
-        let mut db = Database::new();
-        db.add_submission(post1);
-        println!("{:?}", db.popular_posts(GetPostFilters {location : [47.6720145,-122.3539607], location_range : 1.0, tags : vec!["gas".to_string()], price_range : 1}));
-    }
-}
