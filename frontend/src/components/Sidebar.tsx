@@ -1,6 +1,6 @@
 import { Add, Menu } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SidebarPost from "./SidebarPost";
 import { Post } from "../types/post";
 
@@ -8,6 +8,14 @@ import { Post } from "../types/post";
 function Sidebar(props: {posts: Post[], selectedPost: Post|undefined, setSelectedPost: (post: Post|undefined)=>void}) {
     
     const [sidebarOpen, setSidebarOpen] = useState(true)
+
+    // useEffect(()=>{
+    //     if (window.matchMedia("min-width: 640px")) {
+    //         setSidebarOpen(false);
+    //     }
+    // }, [props.selectedPost])
+
+    useEffect
 
     return (
         <div className="flex h-full bg-gradient-to-b from-light-200 to-light-300 shadow-lg flex-shrink-0" style={{boxShadow: "0px 0px 10px -3px rgba(0,0,0,0.5)"}}>

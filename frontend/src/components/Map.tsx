@@ -4,27 +4,40 @@ import { TileLayer } from 'react-leaflet/TileLayer'
 import "leaflet/dist/leaflet.css";
 import { Post } from '../types/post';
 import { LatLngTuple } from 'leaflet';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
-function SetViewOnClick(props: {selectedPost: Post|undefined, addLocation: (loc: number[])=>void}) {
+function SetViewOnClick(props: {selectedPost: Post|undefined, addLocation: (loc: number[])=>void, mapDiv: React.RefObject<HTMLDivElement>}) {
+
     const map = useMapEvent('contextmenu', (e) => {
         props.addLocation([e.latlng.lat, e.latlng.lng]);
         console.log(e.latlng);
-    })
+    });
+
     useEffect(()=>{
         if (props.selectedPost) {
             map.setView(props.selectedPost.location as LatLngTuple, Math.max(map.getZoom(), 15));
         }
     }, [props.selectedPost])
+
+    useEffect(()=>{
+        if (!props.mapDiv.current) return;
+
+        const resizeObserver = new ResizeObserver(() => {
+            console.log("resize")
+            map.invalidateSize();
+        });
+        resizeObserver.observe(props.mapDiv.current);
+    }, [props.mapDiv])
+
     return null
 }
 
 function Map(props: {posts: Post[], selectedPost: Post|undefined, setSelectedPost: (post: Post|undefined)=>void, addLocation: (loc: number[])=>void}) {
     const position : [number, number] = [47.6061, -122.3328];
-
+    const mapDiv = useRef<HTMLDivElement>(null);
     return (
         <>
-            <div style={{ height : "100%" }}>
+            <div style={{ height : "100%" }} ref={mapDiv}>
                 <MapContainer center={position} zoom={13} scrollWheelZoom={true} style={{ height: "100%", minHeight: "100%" }}>
                     <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -42,7 +55,7 @@ function Map(props: {posts: Post[], selectedPost: Post|undefined, setSelectedPos
                             </Popup>
                         </Marker>
                     )}
-                    <SetViewOnClick selectedPost={props.selectedPost} addLocation={props.addLocation}/>
+                    <SetViewOnClick selectedPost={props.selectedPost} addLocation={props.addLocation} mapDiv={mapDiv}/>
                 </MapContainer>
                 
             </div>
