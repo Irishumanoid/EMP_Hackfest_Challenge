@@ -3,21 +3,24 @@ import { MapContainer } from 'react-leaflet/MapContainer'
 import { TileLayer } from 'react-leaflet/TileLayer'
 import "leaflet/dist/leaflet.css";
 import { Post } from '../types/post';
-import { LatLngTuple, marker } from 'leaflet';
-import L from 'leaflet';
-import React from 'react';
+import { LatLngTuple } from 'leaflet';
+import { useEffect } from 'react';
 
-function SetViewOnClick() {
+function SetViewOnClick(props: {selectedPost: Post|undefined, addLocation: (loc: number[])=>void}) {
     const map = useMapEvent('contextmenu', (e) => {
-      console.log(e.latlng);
+        props.addLocation([e.latlng.lat, e.latlng.lng]);
+        console.log(e.latlng);
     })
-  
+    useEffect(()=>{
+        if (props.selectedPost) {
+            map.setView(props.selectedPost.location as LatLngTuple, Math.max(map.getZoom(), 15));
+        }
+    }, [props.selectedPost])
     return null
 }
 
-function Map(props: {posts: Post[], setSelectedPost: (post: Post|undefined)=>void, addLocation: (loc: number[])=>void}) {
-    const position : [number, number] = [47.6061, -122.3328]
-    const markers : [[number, number]]= [[47.6061, -122.3328]];
+function Map(props: {posts: Post[], selectedPost: Post|undefined, setSelectedPost: (post: Post|undefined)=>void, addLocation: (loc: number[])=>void}) {
+    const position : [number, number] = [47.6061, -122.3328];
 
     return (
         <>
@@ -27,19 +30,19 @@ function Map(props: {posts: Post[], setSelectedPost: (post: Post|undefined)=>voi
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    {props.posts.map((post, idx) =>
-                        <Marker position={post.location as LatLngTuple} eventHandlers={{
-                            click: (e) => {
+                    {props.posts.map((post, index) =>
+                        <Marker key={index} position={post.location as LatLngTuple} eventHandlers={{
+                            click: () => {
                               props.setSelectedPost(post);
                             },
                           }}>
                             <Popup className='mapPopup'>
-                                <h2>{post.display_name}</h2>
-                                <p>{post.description}</p>
+                                <div className='text-lg font-semibold line-clamp-1'>{post.display_name}</div>
+                                <div className='text-sm line-clamp-2'>{post.description}</div>
                             </Popup>
                         </Marker>
                     )}
-                    <SetViewOnClick/>
+                    <SetViewOnClick selectedPost={props.selectedPost} addLocation={props.addLocation}/>
                 </MapContainer>
                 
             </div>
