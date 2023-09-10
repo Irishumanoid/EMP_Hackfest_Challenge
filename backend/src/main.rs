@@ -43,17 +43,23 @@ impl ServerState {
 }
 
 #[post("/backend/post_post", data = "<post>")]
-fn post_post(post: Json<DeprecatedUserPost>, server_arc: &State<Arc<Mutex<ServerState>>>) {
+fn post_post(post: Json<DeprecatedUserPost>, server_arc: &State<Arc<Mutex<ServerState>>>) -> (ContentType, String) {
     let server = server_arc.lock().unwrap();
     server.database.lock().unwrap().add_submission(sightings::UserPost::new(post.0));
+    let resp: &APIResponse<i32> = &APIResponse {success: true, error: None, data: None};
+    let serialized_res = serde_json::to_string(&resp);
+    
+    return match serialized_res {
+        Ok(posts_string) => {(ContentType::JSON, posts_string)},
+        Err(e) => {println!("{e}"); return (ContentType::JSON, error_string("something was wrong on the server side".to_string()));}
+    }
 }
 
 #[derive(Deserialize)]
 pub struct GetPostFilters {
     location: [f64; 2],
-    location_range: f64, //miles
-    tags: Vec<String>,
-    price_range: i32,
+    tag: Option<String>,
+    max_price: i32,
 }
 
 #[derive(Serialize)]
@@ -67,12 +73,6 @@ pub fn error_string(message: String) -> String {
     return format!("{{\"success\":true, \"error\": \"{message}\"}}");
 }
 
-pub fn sort_posts(db: &Database) -> Vec<sightings::UserPost> {
-    db.data.iter().map(|db_entry| {
-        db_entry.post.clone()
-    }).collect()
-}
-
 #[options("/<_..>")]
 fn all_options() {
     /* Intentionally left empty */
@@ -82,8 +82,11 @@ fn all_options() {
 #[post["/backend/get_posts", data = "<filters>"]]
 fn get_posts(filters: Json<GetPostFilters>, server_arc: &State<Arc<Mutex<ServerState>>>) -> (ContentType, String) {
     let server = server_arc.lock().unwrap();
-    let posts = sort_posts(&server.database.lock().unwrap());
-
+    let posts: Vec<sightings::UserPost> = if filters.tag.is_some() {
+        server.database.lock().unwrap().popular_posts(filters.0).iter().map(|entry| entry.post.clone()).collect()
+    } else {
+        server.database.lock().unwrap().data.iter().map(|entry| entry.post.clone()).collect()
+    };
     let resp = &APIResponse {success: true, error: None, data: Some(posts)};
     let serialized_posts = serde_json::to_string(&resp);
     
