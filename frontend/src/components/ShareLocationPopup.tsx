@@ -12,6 +12,10 @@ function ShareLocationPopup(props: {onCancel: ()=>void, onSubmit: (name: string,
     const descriptionRef = useRef<HTMLInputElement>(null);
 
     const [foodRating, setFoodRating] = useState(0);
+    const [groceryRating, setGroceryRating] = useState(0);
+    const [gasRating, setGasRating] = useState(0);
+    const [clothesRating, setClothesRating] = useState(0);
+    const [parkingRating, setParkingrating] = useState(0);
 
     const [firstScreen, setFirstScreen] = useState(true);
     const StyledRating = styled(Rating)({
@@ -27,9 +31,22 @@ function ShareLocationPopup(props: {onCancel: ()=>void, onSubmit: (name: string,
     function onTrySubmit()
     {
         console.log(foodRating);
+
+        var tags = [];
+        var ratings = [];
+
+        if (foodRating != 0) { tags.push("Food"); ratings.push(foodRating); }
+        if (groceryRating != 0) { tags.push("Groceries"); ratings.push(groceryRating); }
+        if (gasRating != 0) { tags.push("Gas"); ratings.push(gasRating); }
+        if (clothesRating != 0) { tags.push("Clothes"); ratings.push(clothesRating); }
+        if (parkingRating != 0) { tags.push("Parking"); ratings.push(parkingRating); }
+
+        console.log(tags);
+        console.log(ratings);
+
         if (nameRef.current?.value && descriptionRef.current?.value)
         {
-            props.onSubmit(nameRef.current.value, descriptionRef.current.value, props.uploadLocation, [], []);
+            props.onSubmit(nameRef.current.value, descriptionRef.current.value, props.uploadLocation, tags, ratings);
         }
     }
 
@@ -63,15 +80,15 @@ function ShareLocationPopup(props: {onCancel: ()=>void, onSubmit: (name: string,
                 </div>
                 <div className={`flex-col items-center ${firstScreen ? 'hidden' : 'flex'}`}>
                     <p>Food</p>
-                    <StyledRating name="customized-color" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {
-                        setFoodRating(newValue||0);
-                    }}/>
+                    <StyledRating name="customized-color" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {setFoodRating(newValue||0)}} value={foodRating}/>
                     <p>Groceries</p>
-                    <StyledRating name="customized-color2" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} />
+                    <StyledRating name="customized-color2" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {setGroceryRating(newValue||0)}} value={groceryRating}/>
                     <p>Gas</p>
-                    <StyledRating name="customized-color3" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} />
+                    <StyledRating name="customized-color3" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {setGasRating(newValue||0)}} value={gasRating}/>
                     <p>Clothes</p>
-                    <StyledRating name="customized-color4" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} />
+                    <StyledRating name="customized-color4" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {setClothesRating(newValue||0)}} value={clothesRating}/>
+                    <p>Parking</p>
+                    <StyledRating name="customized-color4" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {setParkingrating(newValue||0)}} value={parkingRating}/>
                     <br></br>
                     <div className="flex flex-wrap text-lg font-semibold gap-1 my-2">
                         <Button variant="outlined" onClick={()=>setFirstScreen(true)}>Back</Button>
