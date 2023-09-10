@@ -34,7 +34,7 @@ impl ServerState {
     }
 }
 
-#[post("/backend/post_post", data = "<post>")]
+#[post("/post_post", data = "<post>")]
 fn post_post(post: Json<ClientUserPost>, server_arc: &State<Arc<Mutex<ServerState>>>) -> (ContentType, String){
     let server = server_arc.lock().unwrap();
     server.database.lock().unwrap().add_submission(sightings::UserPost::new(post.0));

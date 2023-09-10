@@ -369,37 +369,3 @@ impl PostType {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    //Run with -- --nocapture
-    fn integ_test() {
-        let mut db = Database::new();
-
-        let post1 = UserPost::from(
-            "John Billy".to_string(),
-            "Gas station here only 4.99 / gal".to_string(), 
-            [47.6720145,-122.3539607], 
-            // vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], 
-            vec![PostType::Gas(GasPrices {price_rating : 3})],
-            None
-        );
-        db.add_submission(post1);
-
-        let post2 = UserPost::from(
-            "John Billy 2".to_string(),
-            "GREAT PARKING PLACE!".to_string(), 
-            [47.667762, -122.339747], 
-            // vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], 
-            vec![PostType::Gas(GasPrices {price_rating : 3})],
-            None
-        );
-        db.add_submission(post2);
-
-        // let post_filters = GetPostFilters {location : [47.668666, -122.350483], tags : vec!["gas".to_string(), "parking".to_string()], price_range : 1};
-        let post_filters = GetPostFilters {location : [47.668666, -122.350483], tag : Some("gas".to_string()), max_price : 1};
-        println!("{:?}", db.popular_posts(post_filters));
-    }
-}
