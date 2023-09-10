@@ -1,4 +1,4 @@
-use std::sync::{Mutex, Arc};
+use std::{sync::{Mutex, Arc}, fs::{OpenOptions, File}, path::Path, io::Write};
 
 use pic_handler::uploader;
 use rocket::{serde::json::Json, http::{ContentType, Header}, fairing::{Fairing, Info, Kind}, Request, Response, fs::FileServer, State};
@@ -94,11 +94,24 @@ fn get_posts(filters: Json<GetPostFilters>, server_arc: &State<Arc<Mutex<ServerS
     }
 }
 
+fn create_or_open_file(path: &str) -> Result<std::fs::File, std::io::Error> {
+    return OpenOptions::new()
+        .write(true)
+        .create(!Path::new(path).exists())
+        .truncate(true)
+        .open(path);
+}
 
-#[launch]
-fn rocket() -> _ {
-    let server = Arc::new(Mutex::new(ServerState::new()));
-    rocket::build()
+#[rocket::main]
+async fn main() {
+    let server = if Path::new("db.json").exists() {
+        let db_file = File::open(Path::new("db.json")).expect("eek!");
+        let database: Database = serde_json::from_reader(db_file).expect("oof not json");
+        Arc::new(Mutex::new(ServerState {database: Mutex::new(database)}))
+    } else {
+        Arc::new(Mutex::new(ServerState::new()))
+    };
+    let result = rocket::build()
         .manage(server.clone())
         .attach(CORS)
         .mount(
@@ -114,7 +127,25 @@ fn rocket() -> _ {
         .mount(
             "/",
             FileServer::from("../frontend/dist"),
-        )
+        ).launch().await;
+    match result {
+        Ok(_val) => {}
+        Err(e) => println!("{e}"),
+    }
+    let db_json = serde_json::to_string(&server.lock().unwrap().database);
+    let db_file = create_or_open_file("db.json");
+    if db_json.is_ok() && db_file.is_ok() {
+        println!("{}", db_json.as_ref().unwrap().clone());
+        db_file.unwrap().write_all(db_json.as_ref().unwrap().as_bytes()).expect("eek!");
+        println!("saved database successfully")
+    } else {
+        if db_json.is_err() {
+            println!("{}", db_json.unwrap_err());
+        }
+        if db_file.is_err() {
+            println!("{}", db_file.unwrap_err());
+        }
+    }
 }
 
 pub struct CORS;

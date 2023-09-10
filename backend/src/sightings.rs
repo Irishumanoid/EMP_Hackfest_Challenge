@@ -14,7 +14,7 @@
 use core::panic;
 use crate::GetPostFilters;
 use rocket::time::{PrimitiveDateTime, Duration};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
 use crate::macros::hypot;
 
@@ -24,11 +24,12 @@ pub const UPVOTE_WEIGHT : f64 = 1.0;
 pub const DOWNVOTE_WEIGHT : f64 = 1.0;
 pub const MILES_CLUSTER_RANGE : f64 = 20.0;
 
+#[derive(Serialize, Deserialize)]
 pub struct Database {
     pub data : Vec<DbEntry>,
 }
 
-#[derive(Clone, std::fmt::Debug)]
+#[derive(Clone, std::fmt::Debug, Serialize, Deserialize)]
 pub struct DbEntry {
     pub id : i32,
     pub post : UserPost,
@@ -116,7 +117,7 @@ impl Database {
     }
 }
 
-#[derive(Clone, Serialize, std::fmt::Debug)]
+#[derive(Clone, Serialize, std::fmt::Debug, Deserialize)]
 pub struct UserPost {
     pub display_name: String,
     pub description: String,
@@ -251,13 +252,13 @@ impl UserPost {
     }
 }
 
-#[derive(Clone, Serialize, std::fmt::Debug)]
+#[derive(Clone, Serialize, std::fmt::Debug, Deserialize)]
 pub struct Coordinates {
     pub latitude  : f64,
     pub longitude : f64,
 }
 
-#[derive(Clone, std::fmt::Debug)]
+#[derive(Clone, std::fmt::Debug, Serialize, Deserialize)]
 pub struct Stats {
     pub upvotes   : u32,
     pub downvotes : u32,
@@ -315,12 +316,12 @@ impl Coordinates {
     }
 }
 
-#[derive(Clone, Serialize, std::fmt::Debug)]
+#[derive(Clone, Serialize, std::fmt::Debug, Deserialize)]
 pub struct ClothesPrices {
     pub price_rating : i32, //1-5
 }
 
-#[derive(Clone, Serialize, std::fmt::Debug)]
+#[derive(Clone, Serialize, std::fmt::Debug, Deserialize)]
 pub struct ParkingPrices {
     pub price_rating : i32,
     //pub avg_hourly : f64,
@@ -328,7 +329,7 @@ pub struct ParkingPrices {
     //pub avg_monthly: f64,
 }
 
-#[derive(Clone, Serialize, std::fmt::Debug)]
+#[derive(Clone, Serialize, std::fmt::Debug, Deserialize)]
 pub struct GasPrices {
     pub price_rating : i32,
     //pub per_gallon : f64,
@@ -336,7 +337,7 @@ pub struct GasPrices {
     //pub diesel_per_gallon : f64,
 }
 
-#[derive(Clone, Serialize, std::fmt::Debug)]
+#[derive(Clone, Serialize, std::fmt::Debug, Deserialize)]
 pub struct FoodPrices {
     pub price_rating : i32,
     //pub avg_food_per_person : f64,
@@ -344,12 +345,12 @@ pub struct FoodPrices {
 }
 
 //TODO: Make each of the fields optional and only filter with things that have the optional field filled in
-#[derive(Clone, Serialize, std::fmt::Debug)]
+#[derive(Clone, Serialize, std::fmt::Debug, Deserialize)]
 pub struct GroceryPrices {
     pub price_rating : i32, //1-5
 }
 
-#[derive(Clone, Serialize, std::fmt::Debug)]
+#[derive(Clone, Serialize, std::fmt::Debug, Deserialize)]
 pub enum PostType {
     Clothes(ClothesPrices),
     Gas(GasPrices),
