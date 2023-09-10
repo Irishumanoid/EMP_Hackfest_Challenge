@@ -3,7 +3,7 @@ import { MapContainer } from 'react-leaflet/MapContainer'
 import { TileLayer } from 'react-leaflet/TileLayer'
 import "leaflet/dist/leaflet.css";
 import { Post } from '../types/post';
-import { LatLng, LatLngTuple } from 'leaflet';
+import { LatLngTuple } from 'leaflet';
 import { useEffect, useRef } from 'react';
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
 import { useMap } from 'react-leaflet';

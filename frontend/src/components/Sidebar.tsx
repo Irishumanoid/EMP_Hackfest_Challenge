@@ -1,4 +1,4 @@
-import { Add, Menu } from "@mui/icons-material";
+import { Menu } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 import { useState } from "react";
 import SidebarPost from "./SidebarPost";
