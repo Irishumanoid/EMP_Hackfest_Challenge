@@ -169,9 +169,9 @@ pub fn conv_to_pt(tags: Vec<String>, price_rating : Vec<i32>) -> Vec<PostType> {
         pts.push(match tag.to_lowercase().as_str() {
             "clothes" => PostType::Clothes(ClothesPrices {price_rating: price_rating[index]} ),
             "food" => PostType::Food(FoodPrices { price_rating: price_rating[index] }),
-            "groceries" => PostType::Gas(GasPrices { price_rating: price_rating[index] }),
-            "parking" => PostType::Grocery(GroceryPrices { price_rating: price_rating[index] }),
-            "gas" => PostType::Parking(ParkingPrices { price_rating: price_rating[index] }),
+            "gas" => PostType::Gas(GasPrices { price_rating: price_rating[index] }),
+            "grocery" => PostType::Grocery(GroceryPrices { price_rating: price_rating[index] }),
+            "parking" => PostType::Parking(ParkingPrices { price_rating: price_rating[index] }),
             _ => panic!("User Submission Error"),
         });
         index += 1;
