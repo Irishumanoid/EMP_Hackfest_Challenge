@@ -3,8 +3,10 @@ import { MapContainer } from 'react-leaflet/MapContainer'
 import { TileLayer } from 'react-leaflet/TileLayer'
 import "leaflet/dist/leaflet.css";
 import { Post } from '../types/post';
-import { LatLngTuple } from 'leaflet';
+import { LatLng, LatLngTuple } from 'leaflet';
 import { useEffect, useRef } from 'react';
+import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
+import { useMap } from 'react-leaflet';
 
 function SetViewOnClick(props: {selectedPost: Post|undefined, addLocation: (loc: number[])=>void, mapDiv: React.RefObject<HTMLDivElement>}) {
 
@@ -32,9 +34,30 @@ function SetViewOnClick(props: {selectedPost: Post|undefined, addLocation: (loc:
     return null
 }
 
+const SearchField = () => {
+    const provider = new OpenStreetMapProvider();
+  
+    // @ts-ignore
+    const searchControl = new GeoSearchControl({
+      provider: provider,
+    });
+  
+    const map = useMap();
+    useEffect(() => {
+      map.addControl(searchControl);
+      return () => {map.removeControl(searchControl)};
+    }, []);
+  
+    return null;
+};
+
 function Map(props: {posts: Post[], selectedPost: Post|undefined, setSelectedPost: (post: Post|undefined)=>void, addLocation: (loc: number[])=>void}) {
     const position : [number, number] = [47.6061, -122.3328];
     const mapDiv = useRef<HTMLDivElement>(null);
+
+    
+
+
     return (
         <>
             <div style={{ height : "100%" }} ref={mapDiv}>
@@ -56,6 +79,8 @@ function Map(props: {posts: Post[], selectedPost: Post|undefined, setSelectedPos
                         </Marker>
                     )}
                     <SetViewOnClick selectedPost={props.selectedPost} addLocation={props.addLocation} mapDiv={mapDiv}/>
+
+                    <SearchField/>
                 </MapContainer>
                 
             </div>
