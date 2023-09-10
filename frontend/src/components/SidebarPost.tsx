@@ -16,7 +16,7 @@ function Post(props: {post: Post, onClick: React.MouseEventHandler<HTMLDivElemen
                 )}
             </div>
             {averageRating > 0 &&
-                <span className="text-green-500 font-extrabold text-3xl">{[...Array(Math.round(averageRating))].map((e, i) => <AttachMoney key={i} fontSize="inherit" className="-mr-3"/>)}</span>
+                <span className="text-green-500 font-extrabold text-3xl">{[...Array(Math.round(averageRating))].map((_e, i) => <AttachMoney key={i} fontSize="inherit" className="-mr-3"/>)}</span>
             }
         </div>
     )

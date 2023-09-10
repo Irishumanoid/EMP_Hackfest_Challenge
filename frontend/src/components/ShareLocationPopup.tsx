@@ -80,15 +80,15 @@ function ShareLocationPopup(props: {onCancel: ()=>void, onSubmit: (name: string,
                 </div>
                 <div className={`flex-col items-center ${firstScreen ? 'hidden' : 'flex'}`}>
                     <p>Food</p>
-                    <StyledRating name="customized-color" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {setFoodRating(newValue||0)}} value={foodRating}/>
+                    <StyledRating name="customized-color" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(_e, newValue) => {setFoodRating(newValue||0)}} value={foodRating}/>
                     <p>Groceries</p>
-                    <StyledRating name="customized-color2" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {setGroceryRating(newValue||0)}} value={groceryRating}/>
+                    <StyledRating name="customized-color2" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(_e, newValue) => {setGroceryRating(newValue||0)}} value={groceryRating}/>
                     <p>Gas</p>
-                    <StyledRating name="customized-color3" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {setGasRating(newValue||0)}} value={gasRating}/>
+                    <StyledRating name="customized-color3" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(_e, newValue) => {setGasRating(newValue||0)}} value={gasRating}/>
                     <p>Clothes</p>
-                    <StyledRating name="customized-color4" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {setClothesRating(newValue||0)}} value={clothesRating}/>
+                    <StyledRating name="customized-color4" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(_e, newValue) => {setClothesRating(newValue||0)}} value={clothesRating}/>
                     <p>Parking</p>
-                    <StyledRating name="customized-color4" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(event, newValue) => {setParkingrating(newValue||0)}} value={parkingRating}/>
+                    <StyledRating name="customized-color4" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(_e, newValue) => {setParkingrating(newValue||0)}} value={parkingRating}/>
                     <br></br>
                     <div className="flex flex-wrap text-lg font-semibold gap-1 my-2">
                         <Button variant="outlined" onClick={()=>setFirstScreen(true)}>Back</Button>
