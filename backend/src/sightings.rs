@@ -142,8 +142,8 @@ impl Database {
         result.sort_by(|a : &Arc<Mutex<DbEntry>>, b : &Arc<Mutex<DbEntry>>| {
             let valb = b.lock().unwrap().get_score_recursive(recency_distance_function, inverse_distance_multiplier, None, &Coordinates::new(filters.location[0], filters.location[1]));
             let vala = &a.lock().unwrap().get_score_recursive(recency_distance_function, inverse_distance_multiplier, None, &Coordinates::new(filters.location[0], filters.location[1]));
-            b.lock().unwrap().post.score_cache = valb;
-            a.lock().unwrap().post.score_cache = *vala;
+            // b.lock().unwrap().post.score_cache = valb;
+            // a.lock().unwrap().post.score_cache = *vala;
             valb.partial_cmp(vala).unwrap()
         });
         result
@@ -158,7 +158,7 @@ pub struct UserPost {
     pub location: Coordinates,
     pub tags: Vec<PostType>,
     pub picture: Option<String>,
-    pub score_cache : f64,
+    // pub score_cache : f64,
 }
 
 
@@ -221,7 +221,7 @@ impl UserPost {
             location: Coordinates::new(location[0], location[1]),
             tags,
             picture,
-            score_cache : -1.0,
+            // score_cache : -1.0,
         }
     }
     pub fn new(post: crate::ClientUserPost) -> UserPost {
@@ -232,7 +232,7 @@ impl UserPost {
             location: Coordinates::new(post.location[0].into(), post.location[1].into()),
             tags: conv_to_pt(post.tags, post.price_rating.clone()),
             picture: post.picture,
-            score_cache : post.score_cache,
+            // score_cache : post.score_cache,
         }
     }
     pub fn to_ClientUserPost(self) -> crate::ClientUserPost {
@@ -245,7 +245,7 @@ impl UserPost {
             tags : n.0,
             price_rating : n.1,
             picture : self.picture,
-            score_cache : self.score_cache,
+            // score_cache : self.score_cache,
         }
     }
     pub fn check_if_type_in(&self, tags : &Vec<String>) -> bool {
