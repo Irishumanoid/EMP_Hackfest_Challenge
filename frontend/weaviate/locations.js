@@ -13,13 +13,16 @@ const client = weaviate.client({
 
 //location test
 
-async function addLocationInSeattle() {
+async function addLocationInSeattle(identifier, display_name, description, location, tags, price_rating) {
     const locationObject = {
       class: 'Location',
       properties: {
-        latitude: 47.6062, // Seattle's latitude
-        longitude: -122.3321, // Seattle's longitude
-        name: 'Seattle, Washington' // Location name
+        identifier: identifier,
+        display_name: display_name,
+        description: description,
+        location: location,
+        tags: tags,
+        price_rating: price_rating,
       }
     };
   
@@ -27,11 +30,7 @@ async function addLocationInSeattle() {
         const response = await client.data
             .creator()
             .withClassName('Location')
-            .withProperties({
-                latitude: 47.6062, // Seattle's latitude
-                longitude: -122.3321, // Seattle's longitude
-                name: 'Seattle, Washington' // Location name
-                })
+            .withProperties(locationObject.properties)
             .do();
       console.log('Location added successfully:', response);
     } catch (error) {
@@ -39,7 +38,7 @@ async function addLocationInSeattle() {
     }
   }
     
-  await addLocationInSeattle();
+  await addLocationInSeattle(1, "Seattle, Washington", "testing description", [47.6062, -122.3321], ["gas", "store", "food"], [4, 1, 2]);
 
 
   const endpoint = 'https://hackathoncluster-u4dweh7m.weaviate.network/graphql'; 
@@ -80,14 +79,36 @@ async function addLocationInSeattle() {
   }
 
 
-  
-  //getSeattleLocations();
 
-  const result = await client.data
-  .getterById()
-  .withClassName('Location')
-  .withId('a6ad7ab3-f406-4a78-84ef-5a006ef6edbb')
-  .withVector()
-  .do();
+const generateMatching = async (prompt, numResults) => {
+  try {
+    let result = await client.graphql
+      .get()
+      .withClassName('Location')
+      .withGenerate({
+        singlePrompt: prompt,
+      })
+      .withNearObject({
+        object: {
+          id: 'a6ad7ab3-f406-4a78-84ef-5a006ef6edbb',
+          className: 'Location',
+        },
+        certainty: 0.8, 
+        distance: '100m',
+      })
+      .withFields(['location'])
+      .withLimit(numResults)
+      .do();
 
-console.log(JSON.stringify(result, null, 2));
+    console.log(JSON.stringify(result, null, 2));
+
+    return result;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+console.log(generateMatching(`Pick a location in Seattle close to Seattle Center: {Location}.`, 10));
+
+export {generateMatching, addLocationInSeattle};
