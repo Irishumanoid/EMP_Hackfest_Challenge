@@ -15,7 +15,7 @@ mod macros;
 extern crate rocket;
 
 #[derive(Deserialize, Serialize)]
-pub struct DeprecatedUserPost {
+pub struct ClientUserPost {
     pub display_name: String,
     pub description: String,
     pub location: [f64; 2],
@@ -26,7 +26,6 @@ pub struct DeprecatedUserPost {
 
 struct ServerState {
     database: Mutex<Database>,
-
 }
 
 impl ServerState {
@@ -35,8 +34,8 @@ impl ServerState {
     }
 }
 
-#[post("/post_post", data = "<post>")]
-fn post_post(post: Json<DeprecatedUserPost>, server_arc: &State<Arc<Mutex<ServerState>>>) -> (ContentType, String) {
+#[post("/backend/post_post", data = "<post>")]
+fn post_post(post: Json<ClientUserPost>, server_arc: &State<Arc<Mutex<ServerState>>>) -> (ContentType, String){
     let server = server_arc.lock().unwrap();
     server.database.lock().unwrap().add_submission(sightings::UserPost::new(post.0));
     let resp: &APIResponse<i32> = &APIResponse {success: true, error: None, data: None};
@@ -64,6 +63,12 @@ struct APIResponse<T> {
 
 pub fn error_string(message: String) -> String {
     return format!("{{\"success\":true, \"error\": \"{message}\"}}");
+}
+
+pub fn sort_posts(db: &Database) -> Vec<ClientUserPost> {
+    db.data.iter().map(|db_entry| {
+        db_entry.post.clone().to_ClientUserPost()
+    }).collect()
 }
 
 #[options("/<_..>")]

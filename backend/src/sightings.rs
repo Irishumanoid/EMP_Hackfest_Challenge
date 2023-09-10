@@ -22,6 +22,7 @@ pub const AGREE_WEIGHT : f64 = 2.0;
 pub const DISAGREE_WEIGHT : f64 = 3.0;
 pub const UPVOTE_WEIGHT : f64 = 1.0;
 pub const DOWNVOTE_WEIGHT : f64 = 1.0;
+pub const MILES_CLUSTER_RANGE : f64 = 20.0;
 
 pub struct Database {
     pub data : Vec<DbEntry>,
@@ -35,22 +36,36 @@ pub struct DbEntry {
 }
 
 impl DbEntry {
+    pub fn get_score_recursive(&self, 
+        recency_multiplier : fn(Option<Duration>) -> f64, 
+        nearby_miles_multiplier : fn(f64) -> f64,
+        time : Option<()>, //TODO
+        home_location : &Coordinates,
+    ) -> f64 {
+        let mut score = self.get_score(recency_multiplier, nearby_miles_multiplier, time, home_location);
+        for i in self.stats.similar_posts_ids.iter() {
+            score += self.get_score(recency_multiplier, nearby_miles_multiplier, time, home_location);
+        }
+        println!("Score Recursive: {}", score);
+        score
+    }
     pub fn get_score(&self, 
         recency_multiplier : fn(Option<Duration>) -> f64, 
         nearby_miles_multiplier : fn(f64) -> f64,
         time : Option<()>, //TODO
-        home_location : Coordinates,
+        home_location : &Coordinates,
     ) -> f64 {
         let nearby_miles = Coordinates::deg_to_miles(self.post.location.deg_dist(&home_location));
-        crate::macros::sigmoid(self.stats.get_net_votes()) //Sigmoid function so that the score is between 0 and 1
-        //TODO make this more interesting with statistics
+        let ret = (self.stats.get_net_votes() + 1.0)
         * recency_multiplier(None) //TODO
-        * nearby_miles_multiplier(nearby_miles)
+        * nearby_miles_multiplier(nearby_miles);
+        println!("Score: {}", ret);
+        ret
     }
 }
 
 pub fn inverse_distance_multiplier(miles : f64) -> f64 {
-    1.0 / (f64::max(miles, 1.0))
+    1.0 / (f64::max(miles, 0.00001))//TODO 1.0))
 }
 pub fn recency_distance_function(duration : Option<Duration>) -> f64 {
     match duration {
@@ -76,7 +91,15 @@ impl Database {
         }
     }
     pub fn add_submission(&mut self, submission : UserPost) {
-        self.data.push(DbEntry{ post : submission, stats : Stats::new(), id : self.data.len() as i32 });
+        let last = self.data.len() as usize;
+        self.data.push(DbEntry {post : submission, stats : Stats::new(), id : last as i32});
+        let splitmut = self.data.split_at_mut(last);
+        for i in splitmut.0.iter_mut() {
+            if i.post.location.in_range(&splitmut.1[0].post.location, MILES_CLUSTER_RANGE) {
+                i.stats.similar_posts_ids.push(last as u32);
+                splitmut.1[0].stats.similar_posts_ids.push(i.id as u32);
+            }
+        }
     }
     pub fn popular_posts(&self, filters : GetPostFilters) -> Vec<DbEntry> {
         //TODO: Get actual time
@@ -85,9 +108,9 @@ impl Database {
         .filter(|i| i.post.check_if_in_filter(&filters))
         .collect::<Vec<DbEntry>>();
         result.sort_by(|a : &DbEntry, b : &DbEntry| 
-            b.get_score(recency_distance_function, inverse_distance_multiplier, None, Coordinates::new(filters.location[0], filters.location[1]))
+            b.get_score_recursive(recency_distance_function, inverse_distance_multiplier, None, &Coordinates::new(filters.location[0], filters.location[1]))
             .partial_cmp(
-            &a.get_score(recency_distance_function, inverse_distance_multiplier, None, Coordinates::new(filters.location[0], filters.location[1])))
+            &a.get_score_recursive(recency_distance_function, inverse_distance_multiplier, None, &Coordinates::new(filters.location[0], filters.location[1])))
             .unwrap());
         result
     }
@@ -114,7 +137,7 @@ pub fn conv_to_pt(tags: Vec<String>, price_rating : Vec<i32>) -> Vec<PostType> {
             "groceries" => PostType::Gas(GasPrices { price_rating: price_rating[index] }),
             "parking" => PostType::Grocery(GroceryPrices { price_rating: price_rating[index] }),
             "gas" => PostType::Parking(ParkingPrices { price_rating: price_rating[index] }),
-            _ => panic!("balls"),
+            _ => panic!("User Submission Error"),
         });
         index += 1;
     };
@@ -122,6 +145,36 @@ pub fn conv_to_pt(tags: Vec<String>, price_rating : Vec<i32>) -> Vec<PostType> {
     pts
 }
 
+pub fn conv_to_cpt(tags: Vec<PostType>) -> (Vec<String>, Vec<i32>) {
+    let mut pts = Vec::new();
+    let mut price_rating = Vec::new();
+    for tag in tags {
+        match tag {
+            PostType::Clothes(ClothesPrices {price_rating: i32}) => {
+                pts.push("clothes".to_string());
+                price_rating.push(i32);
+            },
+            PostType::Food(FoodPrices { price_rating: i32 }) => {
+                pts.push("food".to_string());
+                price_rating.push(i32);
+            },
+            PostType::Grocery(GroceryPrices { price_rating: i32 }) => {
+                pts.push("groceries".to_string());
+                price_rating.push(i32);
+            },
+            PostType::Parking(ParkingPrices { price_rating: i32 }) => {
+                pts.push("parking".to_string());
+                price_rating.push(i32);
+            },
+            PostType::Gas(GasPrices { price_rating: i32 }) => {
+                pts.push("gas".to_string());
+                price_rating.push(i32);
+            },
+        };
+    };
+
+    (pts, price_rating)
+}
 
 
 impl UserPost {
@@ -135,7 +188,7 @@ impl UserPost {
             price_rating,
         }
     }
-    pub fn new(post: crate::DeprecatedUserPost) -> UserPost {
+    pub fn new(post: crate::ClientUserPost) -> UserPost {
         UserPost {
             display_name: post.display_name,
             description: post.description,
@@ -145,6 +198,29 @@ impl UserPost {
             price_rating: post.price_rating,
         }
     }
+    pub fn to_ClientUserPost(self) -> crate::ClientUserPost {
+        let n = conv_to_cpt(self.tags);
+        crate::ClientUserPost {
+            display_name : self.display_name,
+            description : self.description,
+            location : [self.location.latitude, self.location.longitude],
+            tags : n.0,
+            price_rating : n.1,
+            picture : self.picture,
+        }
+    }
+    pub fn check_if_type_in(&self, tags : &Vec<String>) -> bool {
+        crate::macros::bool_or(
+            &self.tags.iter().map(|t: &PostType | 
+                match t {
+                    PostType::Clothes(_) => (tags.iter().map(|i| i.to_lowercase()).collect::<Vec<String>>()).contains(&"clothes".to_string()),
+                    PostType::Gas(_)     => (tags.iter().map(|i| i.to_lowercase()).collect::<Vec<String>>()).contains(&"gas".to_string()),
+                    PostType::Food(_)    => (tags.iter().map(|i| i.to_lowercase()).collect::<Vec<String>>()).contains(&"food".to_string()),
+                    PostType::Grocery(_) => (tags.iter().map(|i| i.to_lowercase()).collect::<Vec<String>>()).contains(&"grocery".to_string()),
+                    PostType::Parking(_) => (tags.iter().map(|i| i.to_lowercase()).collect::<Vec<String>>()).contains(&"parking".to_string()),
+                })
+            .collect::<Vec<bool>>()
+        )
     pub fn same_type(&self, tag : &String) -> bool {
             for self_tag in &self.tags.iter().map(|t: &PostType | 
                 t.get_string()
@@ -159,7 +235,13 @@ impl UserPost {
         let mut price = 0;
         for (i, self_tag) in self.tags.iter().enumerate() {
             if self_tag.get_string() == tag {
-                price = self.price_rating[i];
+                price = match self_tag {
+                    PostType::Clothes(ClothesPrices {price_rating}) => *price_rating,
+                    PostType::Gas(GasPrices {price_rating}) => *price_rating,
+                    PostType::Food(FoodPrices {price_rating}) => *price_rating,
+                    PostType::Grocery(GroceryPrices {price_rating}) => *price_rating,
+                    PostType::Parking(ParkingPrices {price_rating}) => *price_rating,
+                }
             }
         }
         price <= price_range
@@ -287,5 +369,39 @@ impl PostType {
             PostType::Grocery(_) => "grocery".to_string(),
             PostType::Parking(_) => "parking".to_string(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    //Run with -- --nocapture
+    fn integ_test() {
+        let mut db = Database::new();
+
+        let post1 = UserPost::from(
+            "John Billy".to_string(),
+            "Gas station here only 4.99 / gal".to_string(), 
+            [47.6720145,-122.3539607], 
+            // vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], 
+            vec![PostType::Gas(GasPrices {price_rating : 3})],
+            None
+        );
+        db.add_submission(post1);
+
+        let post2 = UserPost::from(
+            "John Billy 2".to_string(),
+            "GREAT PARKING PLACE!".to_string(), 
+            [47.667762, -122.339747], 
+            // vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], 
+            vec![PostType::Gas(GasPrices {price_rating : 3})],
+            None
+        );
+        db.add_submission(post2);
+
+        // let post_filters = GetPostFilters {location : [47.668666, -122.350483], tags : vec!["gas".to_string(), "parking".to_string()], price_range : 1};
+        let post_filters = GetPostFilters {location : [47.668666, -122.350483], tag : Some("gas".to_string()), max_price : 1};
+        println!("{:?}", db.popular_posts(post_filters));
     }
 }
