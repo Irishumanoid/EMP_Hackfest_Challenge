@@ -4,7 +4,7 @@ async function upload() {
     const formData = new FormData();
     formData.append('image', image);
     formData.append('extension', "png");
-    let image_url = (await (await fetch("https://chrissytopher.com:8000/backend/upload_image/", {
+    let image_url = (await (await fetch("https://chrissytopher.com/backend/upload_image/", {
         method: 'POST',
         body: formData,
         // If you add this, upload won't work

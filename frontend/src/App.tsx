@@ -3,72 +3,80 @@ import Sidebar from "./components/Sidebar";
 import Map from "./components/Map";
 import { Post } from "./types/post";
 import { POST } from "./util/apiHandler";
+
 import {addLocationInSeattle, generateMatching } from "./weaviate/locations";
+import ShareLocationPopup from "./components/ShareLocationPopup";
+
 
 function App() {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post|undefined>(undefined);
 
-  async function refresh() {
-    //const res = await POST("/get_posts", {location: [0,0], tags: [], price_rating: 1});
-    const res = {
-      data: {
-        success: true,
-        posts: [
-          {
-            id: 1,
-            display_name: "This is a name :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name2 :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name6 :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-        ]
-      }
-    };
+  const [uploadLocation, setUploadLocation] = useState<number[]|undefined>(undefined);
+  function addLocation(loc: number[]) {
+    setUploadLocation(loc);
+  }
 
-    const resWithIdentifier = {
+  async function refresh() {
+    const res = await POST("/get_posts", {location: [0,0], tag: undefined, max_price: 5});
+    // const res = {
+    //   data: {
+    //     success: true,
+    //     data: [
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.7, -122.3328],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name2 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6919990, -122.35909],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name3 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6656185, -122.34628],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name4 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6865933, -122.40318],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name5 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6638772, -122.37688],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name6 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6648093, -122.31463],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //     ]
+    //   }
+    // };
+    
+      const resWithIdentifier = {
       data: {
         success: true,
         posts: res.data.posts.map(post => ({
@@ -91,42 +99,45 @@ function App() {
 
     console.log(res.data);
     setPosts(res.data.posts);
+    console.log(res.data.data);
+    setPosts(res.data.data);
+
 
     // TESTING:
-    setSelectedPost(res.data.posts[0]);
+    //setSelectedPost(res.data.posts[0]);
   }
 
 
-  async function upload() {
+  async function Upload(name: string, description: string, location: number[], tags: string[], ratings: number[]) {
     var res = await POST("/post_post", {
-        display_name: "Bongos Restaurant", 
-        description: "I bought some jerk chicken for like $7 and thats pretty cool i would rate the taste 9/10! Def a hidden gem of seattle!", 
-        location: [47.6766866,-122.3470622], 
-        tags: ["Food"], 
-        price_rating: [2]
+        display_name: name, 
+        description: description, 
+        location: location, 
+        tags: tags, 
+        price_rating: ratings
     });
     console.log(res);
     await refresh();
+
+    setUploadLocation(undefined);
   }
 
   useEffect(()=>{
     refresh();
-    upload();
+    //upload();
   }, []);
 
   return (
-    <div className="w-full h-screen overflow-hidden relative">
-      
-       
+    <div className="w-full h-screen">
       <div className="w-full h-full overflow-hidden relative flex flex-row">
         <Sidebar posts={posts} selectedPost={selectedPost} setSelectedPost={setSelectedPost}></Sidebar>
-        <div className="w-full h-full overflow-hidden">
-          {/* <Button variant="contained" onClick={()=>setSidebarOpen(!sidebarOpen)}>Toggle Sidebar</Button> */}
-          {/* <Button onClick={()=>POST("/get_posts")}></Button> */}
-          <Map posts={posts} setSelectedPost={setSelectedPost}/>
-          
+        <div className="w-full h-full overflow-hidden relative">
+          <Map posts={posts} selectedPost={selectedPost} setSelectedPost={setSelectedPost} addLocation={addLocation}/>
         </div>
       </div>
+      {uploadLocation && 
+        <ShareLocationPopup onCancel={()=>setUploadLocation(undefined)} onSubmit={Upload} uploadLocation={uploadLocation}/>
+      }
     </div>
   )
 }
