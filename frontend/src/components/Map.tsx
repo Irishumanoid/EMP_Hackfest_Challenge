@@ -39,7 +39,8 @@ const SearchField = () => {
   
     // @ts-ignore
     const searchControl = new GeoSearchControl({
-      provider: provider,
+        provider: provider,
+        style: 'bar'
     });
   
     const map = useMap();
