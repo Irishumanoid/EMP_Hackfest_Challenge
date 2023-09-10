@@ -9,6 +9,7 @@ function App() {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post|undefined>(undefined);
+  const [selectedType, setSelectedType] = useState<string>("all");
 
   const [uploadLocation, setUploadLocation] = useState<number[]|undefined>(undefined);
   function addLocation(loc: number[]) {
@@ -16,7 +17,16 @@ function App() {
   }
 
   async function refresh() {
-    const res = await POST("/get_posts", {location: [0,0], tag: undefined, max_price: 5});
+
+    var location = [47.6061, -122.3328];
+    try {
+      var geo = await new Promise<GeolocationPosition>((res, rej)=>{
+        navigator.geolocation.getCurrentPosition(res, rej)
+      })
+      location = [geo.coords.latitude, geo.coords.longitude];
+    } catch (e) {};
+
+    const res = await POST("/get_posts", {location, tag: (selectedType == 'all' ? undefined : selectedType), max_price: 5});
     // const res = {
     //   data: {
     //     success: true,
@@ -88,7 +98,8 @@ function App() {
         description: description, 
         location: location, 
         tags: tags, 
-        price_rating: ratings
+        price_rating: ratings,
+        username: ""
     });
     console.log(res);
     await refresh();
@@ -99,12 +110,12 @@ function App() {
   useEffect(()=>{
     refresh();
     //upload();
-  }, []);
+  }, [selectedType]);
 
   return (
     <div className="w-full h-screen">
       <div className="w-full h-full overflow-hidden relative flex flex-row">
-        <Sidebar posts={posts} selectedPost={selectedPost} setSelectedPost={setSelectedPost}></Sidebar>
+        <Sidebar posts={posts} selectedPost={selectedPost} setSelectedPost={setSelectedPost} selectedType={selectedType} setSelectedType={setSelectedType}></Sidebar>
         <div className="w-full h-full overflow-hidden relative">
           <Map posts={posts} selectedPost={selectedPost} setSelectedPost={setSelectedPost} addLocation={addLocation}/>
         </div>

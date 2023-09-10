@@ -1,5 +1,5 @@
 import { Menu } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
+import { IconButton, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useState } from "react";
 import SidebarPost from "./SidebarPost";
 import { Post } from "../types/post";
@@ -7,7 +7,7 @@ import { getTagName } from "../util/tagHandler";
 import CloseIcon from '@mui/icons-material/Close';
 
 
-function Sidebar(props: {posts: Post[], selectedPost: Post|undefined, setSelectedPost: (post: Post|undefined)=>void}) {
+function Sidebar(props: {posts: Post[], selectedPost: Post|undefined, setSelectedPost: (post: Post|undefined)=>void, selectedType: string, setSelectedType: (selectedType: string)=>void}) {
     
     const [sidebarOpen, setSidebarOpen] = useState(true)
 
@@ -40,7 +40,36 @@ function Sidebar(props: {posts: Post[], selectedPost: Post|undefined, setSelecte
                         </div>}
                     </div>
                     <div className="flex flex-col px-4 pt-3 h-full overflow-y-scroll custom-scrollbar bg-gradient-to-b from-light-300 to-light-300">
+                        <div className="flex flex-col items-center gap-1 mb-2">
+                            <ToggleButtonGroup
+                                color="primary"
+                                value={props.selectedType}
+                                exclusive
+                                onChange={(_e, val)=>props.setSelectedType(val)}
+                                aria-label="Platform"
+                                size="small"
+                                sx={{background: "#bab5fd"}}
+                            >
+                                <ToggleButton value="all" sx={{fontWeight: 600}}>All</ToggleButton>
+                                <ToggleButton value="food" sx={{fontWeight: 600}}>Food</ToggleButton>
+                                <ToggleButton value="groceries" sx={{fontWeight: 600}}>Groceries</ToggleButton>
+                            </ToggleButtonGroup>
+                            <ToggleButtonGroup
+                                color="primary"
+                                value={props.selectedType}
+                                exclusive
+                                onChange={(_e, val)=>props.setSelectedType(val)}
+                                aria-label="Platform"
+                                size="small"
+                                sx={{background: "#bab5fd"}}
+                            >
+                                <ToggleButton value="gas" sx={{fontWeight: 600}}>Gas</ToggleButton>
+                                <ToggleButton value="clothes" sx={{fontWeight: 600}}>Clothes</ToggleButton>
+                                <ToggleButton value="parking" sx={{fontWeight: 600}}>Parking</ToggleButton>
+                            </ToggleButtonGroup>
+                        </div>
                         {props.posts.map((post, index)=>{
+                            if (post.display_name == props.selectedPost?.display_name && post.description == props.selectedPost?.description) return null;
                             return (<SidebarPost key={index} post={post} onClick={()=>props.setSelectedPost(post)}></SidebarPost>)
                         })}
                     </div>
