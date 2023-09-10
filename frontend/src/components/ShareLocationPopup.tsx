@@ -88,7 +88,7 @@ function ShareLocationPopup(props: {onCancel: ()=>void, onSubmit: (name: string,
                     <p>Clothes</p>
                     <StyledRating name="customized-color4" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(_e, newValue) => {setClothesRating(newValue||0)}} value={clothesRating}/>
                     <p>Parking</p>
-                    <StyledRating name="customized-color4" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(_e, newValue) => {setParkingrating(newValue||0)}} value={parkingRating}/>
+                    <StyledRating name="customized-color5" defaultValue={0}  precision={1} icon={<PaidIcon fontSize="inherit" />} emptyIcon={<PaiedIconOutline fontSize="inherit" />} onChange={(_e, newValue) => {setParkingrating(newValue||0)}} value={parkingRating}/>
                     <br></br>
                     <div className="flex flex-wrap text-lg font-semibold gap-1 my-2">
                         <Button variant="outlined" onClick={()=>setFirstScreen(true)}>Back</Button>
