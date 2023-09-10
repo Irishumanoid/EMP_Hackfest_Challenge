@@ -12,6 +12,7 @@
 // Similar posts are also clusterd together and their reputations are merged. However, the posts still stay seperate.
 
 use core::panic;
+use std::{sync::{Arc, Mutex, Weak}};
 use crate::GetPostFilters;
 use rocket::time::{PrimitiveDateTime, Duration};
 use serde::{Serialize, Deserialize};
@@ -22,18 +23,29 @@ pub const AGREE_WEIGHT : f64 = 2.0;
 pub const DISAGREE_WEIGHT : f64 = 3.0;
 pub const UPVOTE_WEIGHT : f64 = 1.0;
 pub const DOWNVOTE_WEIGHT : f64 = 1.0;
-pub const MILES_CLUSTER_RANGE : f64 = 20.0;
+pub const MILES_CLUSTER_RANGE : f64 = 0.2;
 
-#[derive(Serialize, Deserialize)]
 pub struct Database {
-    pub data : Vec<DbEntry>,
+    pub data : Vec<Arc<Mutex<DbEntry>>>,
 }
 
-#[derive(Clone, std::fmt::Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
+pub struct StaticDatabase {
+    pub data: Vec<StaticDbEntry>,
+}
+
+#[derive(Clone, std::fmt::Debug)]
 pub struct DbEntry {
     pub id : i32,
     pub post : UserPost,
     pub stats : Stats,
+}
+
+#[derive(Clone, std::fmt::Debug, Serialize, Deserialize)]
+pub struct StaticDbEntry {
+    pub id : i32,
+    pub post : UserPost,
+    pub stats : StaticStats,
 }
 
 impl DbEntry {
@@ -45,9 +57,8 @@ impl DbEntry {
     ) -> f64 {
         let mut score = self.get_score(recency_multiplier, nearby_miles_multiplier, time, home_location);
         for i in self.stats.similar_posts_ids.iter() {
-            score += self.get_score(recency_multiplier, nearby_miles_multiplier, time, home_location);
+            score += i.upgrade().unwrap().lock().unwrap().get_score(recency_multiplier, nearby_miles_multiplier, time, home_location);
         }
-        println!("Score Recursive: {}", score);
         score
     }
     pub fn get_score(&self, 
@@ -60,7 +71,6 @@ impl DbEntry {
         let ret = (self.stats.get_net_votes() + 1.0)
         * recency_multiplier(None) //TODO
         * nearby_miles_multiplier(nearby_miles);
-        println!("Score: {}", ret);
         ret
     }
 }
@@ -77,42 +87,63 @@ pub fn recency_distance_function(duration : Option<Duration>) -> f64 {
     //TODO
 }
 
-// impl Serialize for Database {
-//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-//         let mut s = serializer.serialize_struct("Database", 3)?;
-//         s.serialize_field("phones", &self.phones)?;
-//         s.end()
-//     }
-// }
-
 impl Database {
     pub fn new() -> Database {
         Database {
             data : Vec::new(),
         }
     }
+    pub fn from_static(static_db : StaticDatabase) -> Database {
+        let mut db = Database::new();
+        for entry in static_db.data {
+            db.data.push(Arc::new(Mutex::new(DbEntry {post : entry.post, stats : Stats {upvotes : entry.stats.upvotes, downvotes : entry.stats.downvotes, agree : entry.stats.agree, disagree : entry.stats.disagree, similar_posts_ids : Vec::new()}, id : entry.id})));
+        }
+        db.reindex_clusters();
+        db
+    }
+    pub fn to_static(&self) -> StaticDatabase {
+        let mut static_db = StaticDatabase {data : Vec::new()};
+        for entry in self.data.iter() {
+            static_db.data.push(StaticDbEntry {post : entry.lock().unwrap().post.clone(), stats : StaticStats {upvotes : entry.lock().unwrap().stats.upvotes, downvotes : entry.lock().unwrap().stats.downvotes, agree : entry.lock().unwrap().stats.agree, disagree : entry.lock().unwrap().stats.disagree}, id : entry.lock().unwrap().id});
+        }
+        static_db
+    }
     pub fn add_submission(&mut self, submission : UserPost) {
         let last = self.data.len() as usize;
-        self.data.push(DbEntry {post : submission, stats : Stats::new(), id : last as i32});
+        self.data.push(Arc::new(Mutex::new(DbEntry {post : submission, stats : Stats::new(), id : last as i32})));
         let splitmut = self.data.split_at_mut(last);
-        for i in splitmut.0.iter_mut() {
-            if i.post.location.in_range(&splitmut.1[0].post.location, MILES_CLUSTER_RANGE) {
-                i.stats.similar_posts_ids.push(last as u32);
-                splitmut.1[0].stats.similar_posts_ids.push(i.id as u32);
+        for x in splitmut.0.iter_mut() {
+            if x.lock().unwrap().post.location.in_range(&splitmut.1[0].lock().unwrap().post.location, MILES_CLUSTER_RANGE) {
+                x.lock().unwrap().stats.similar_posts_ids.push(Arc::downgrade(&splitmut.1[0]));
+                splitmut.1[0].lock().unwrap().stats.similar_posts_ids.push(Arc::downgrade(x));
             }
         }
     }
-    pub fn popular_posts(&self, filters : GetPostFilters) -> Vec<DbEntry> {
+    pub fn reindex_clusters(&mut self) {
+        for i in 0..self.data.len() {
+            self.data[i].lock().unwrap().stats.similar_posts_ids = Vec::new();
+        }
+        for i in 0..self.data.len() {
+            let splitmut = self.data.split_at_mut(i);
+            for x in splitmut.0.iter_mut() {
+                if x.lock().unwrap().post.location.in_range(&splitmut.1[0].lock().unwrap().post.location, MILES_CLUSTER_RANGE) {
+                    x.lock().unwrap().stats.similar_posts_ids.push(Arc::downgrade(&splitmut.1[0]));
+                    splitmut.1[0].lock().unwrap().stats.similar_posts_ids.push(Arc::downgrade(x));
+                }
+            }
+        }
+    }
+    pub fn popular_posts(&self, filters : GetPostFilters) -> Vec<Arc<Mutex<DbEntry>>> {
         //TODO: Get actual time
         let mut result = self.data.clone()
         .into_iter()
-        .filter(|i| i.post.check_if_in_filter(&filters))
-        .collect::<Vec<DbEntry>>();
-        result.sort_by(|a : &DbEntry, b : &DbEntry| 
-            b.get_score_recursive(recency_distance_function, inverse_distance_multiplier, None, &Coordinates::new(filters.location[0], filters.location[1]))
-            .partial_cmp(
-            &a.get_score_recursive(recency_distance_function, inverse_distance_multiplier, None, &Coordinates::new(filters.location[0], filters.location[1])))
-            .unwrap());
+        .filter(|i| i.lock().unwrap().post.check_if_in_filter(&filters))
+        .collect::<Vec<Arc<Mutex<DbEntry>>>>();
+        result.sort_by(|a : &Arc<Mutex<DbEntry>>, b : &Arc<Mutex<DbEntry>>| {
+            let valb = b.lock().unwrap().get_score_recursive(recency_distance_function, inverse_distance_multiplier, None, &Coordinates::new(filters.location[0], filters.location[1]));
+            let vala = &a.lock().unwrap().get_score_recursive(recency_distance_function, inverse_distance_multiplier, None, &Coordinates::new(filters.location[0], filters.location[1]));
+            valb.partial_cmp(vala).unwrap()
+        });
         result
     }
 }
@@ -224,7 +255,7 @@ impl UserPost {
             for self_tag in &self.tags.iter().map(|t: &PostType | 
                 t.get_string()
             ).collect::<Vec<String>>() {
-                if self_tag == tag {
+                if self_tag.to_lowercase() == tag.to_lowercase() {
                     return true;
                 }
             }
@@ -258,13 +289,21 @@ pub struct Coordinates {
     pub longitude : f64,
 }
 
-#[derive(Clone, std::fmt::Debug, Serialize, Deserialize)]
+#[derive(Clone, std::fmt::Debug)]
 pub struct Stats {
     pub upvotes   : u32,
     pub downvotes : u32,
     pub agree     : u32,
     pub disagree  : u32,
-    pub similar_posts_ids : Vec<u32>,
+    pub similar_posts_ids : Vec<Weak<Mutex<DbEntry>>>,
+}
+
+#[derive(Clone, std::fmt::Debug, Serialize, Deserialize)]
+pub struct StaticStats {
+    pub upvotes   : u32,
+    pub downvotes : u32,
+    pub agree     : u32,
+    pub disagree  : u32,
 }
 
 impl Stats {
@@ -311,8 +350,8 @@ impl Coordinates {
     pub fn miles_to_deg(miles : f64) -> f64 {
         miles / 69.0
     }
-    pub fn get_tuple(&self) -> (f64, f64) {
-        (self.latitude, self.longitude)
+    pub fn get_tuple(&self) -> [f32; 2] {
+        [self.latitude as f32, self.longitude as f32]
     }
 }
 
@@ -368,5 +407,40 @@ impl PostType {
             PostType::Grocery(_) => "grocery".to_string(),
             PostType::Parking(_) => "parking".to_string(),
         }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    //Run with -- --nocapture
+    fn integ_test() {
+        let mut db = Database::new();
+
+        let post1 = UserPost::from(
+            "John Billy".to_string(),
+            "Gas station here only 4.99 / gal".to_string(), 
+            [47.6720145,-122.3539607], 
+            // vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], 
+            vec![PostType::Gas(GasPrices {price_rating : 3})],
+            None
+        );
+        db.add_submission(post1);
+
+        let post2 = UserPost::from(
+            "John Billy 2".to_string(),
+            "GREAT PARKING PLACE!".to_string(), 
+            [47.667762, -122.339747], 
+            // vec![PostType::Gas(GasPrices {per_gallon : 4.99, premium_per_gallon : 5.19, diesel_per_gallon : 5.49})], 
+            vec![PostType::Gas(GasPrices {price_rating : 3})],
+            None
+        );
+        db.add_submission(post2);
+
+        // let post_filters = GetPostFilters {location : [47.668666, -122.350483], tags : vec!["gas".to_string(), "parking".to_string()], price_range : 1};
+        let post_filters = GetPostFilters {location : [47.668666, -122.350483], tag : Some("gas".to_string()), max_price : 3};
+        println!("{:?}", db.popular_posts(post_filters));
     }
 }

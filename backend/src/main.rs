@@ -3,7 +3,7 @@ use std::{sync::{Mutex, Arc}, fs::{OpenOptions, File}, path::Path, io::Write};
 use pic_handler::uploader;
 use rocket::{serde::json::Json, http::{ContentType, Header}, fairing::{Fairing, Info, Kind}, Request, Response, fs::FileServer, State};
 use serde::{Deserialize, Serialize};
-use sightings::Database;
+use sightings::{Database, StaticDatabase};
 
 
 mod pic_handler;
@@ -65,12 +65,6 @@ pub fn error_string(message: String) -> String {
     return format!("{{\"success\":true, \"error\": \"{message}\"}}");
 }
 
-pub fn sort_posts(db: &Database) -> Vec<ClientUserPost> {
-    db.data.iter().map(|db_entry| {
-        db_entry.post.clone().to_ClientUserPost()
-    }).collect()
-}
-
 #[options("/<_..>")]
 fn all_options() {
     /* Intentionally left empty */
@@ -81,9 +75,10 @@ fn all_options() {
 fn get_posts(filters: Json<GetPostFilters>, server_arc: &State<Arc<Mutex<ServerState>>>) -> (ContentType, String) {
     let server = server_arc.lock().unwrap();
     let posts: Vec<ClientUserPost> = if filters.tag.is_some() {
-        server.database.lock().unwrap().popular_posts(filters.0).iter().map(|entry| entry.post.clone().to_ClientUserPost()).collect()
+        server.database.lock().unwrap().popular_posts(filters.0).iter().map(|entry| entry.lock().unwrap().post.clone().to_ClientUserPost()).collect()
     } else {
-        server.database.lock().unwrap().data.iter().map(|entry| entry.post.clone().to_ClientUserPost()).collect()
+        server.database.lock().unwrap().data.iter().map(|entry| entry.lock().unwrap().post.clone().to_ClientUserPost()).collect()
+        //TODO: No filter should still sort
     };
     let resp = &APIResponse {success: true, error: None, data: Some(posts)};
     let serialized_posts = serde_json::to_string(&resp);
@@ -106,7 +101,7 @@ fn create_or_open_file(path: &str) -> Result<std::fs::File, std::io::Error> {
 async fn main() {
     let server = if Path::new("db.json").exists() {
         let db_file = File::open(Path::new("db.json")).expect("eek!");
-        let database: Database = serde_json::from_reader(db_file).expect("oof not json");
+        let database: Database = Database::from_static(serde_json::from_reader::<_, StaticDatabase>(db_file).expect("oof not json"));
         Arc::new(Mutex::new(ServerState {database: Mutex::new(database)}))
     } else {
         Arc::new(Mutex::new(ServerState::new()))
@@ -132,7 +127,7 @@ async fn main() {
         Ok(_val) => {}
         Err(e) => println!("{e}"),
     }
-    let db_json = serde_json::to_string(&server.lock().unwrap().database);
+    let db_json = serde_json::to_string(&server.lock().unwrap().database.lock().unwrap().to_static());
     let db_file = create_or_open_file("db.json");
     if db_json.is_ok() && db_file.is_ok() {
         println!("{}", db_json.as_ref().unwrap().clone());
