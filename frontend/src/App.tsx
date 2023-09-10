@@ -16,62 +16,62 @@ function App() {
   }
 
   async function refresh() {
-    //const res = await POST("/get_posts", {location: [0,0], tags: [], price_rating: 1});
-    const res = {
-      data: {
-        success: true,
-        data: [
-          {
-            id: 1,
-            display_name: "This is a name :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.7, -122.3328],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name2 :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.6919990, -122.35909],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name3 :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.6656185, -122.34628],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name4 :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.6865933, -122.40318],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name5 :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.6638772, -122.37688],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-          {
-            id: 1,
-            display_name: "This is a name6 :o",
-            description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
-            location: [47.6648093, -122.31463],
-            tags: ["gas", "store", "food"],
-            price_rating: [4, 1, 2],
-          },
-        ]
-      }
-    };
+    const res = await POST("/get_posts", {location: [0,0], tag: undefined, max_price: 5});
+    // const res = {
+    //   data: {
+    //     success: true,
+    //     data: [
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.7, -122.3328],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name2 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6919990, -122.35909],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name3 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6656185, -122.34628],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name4 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6865933, -122.40318],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name5 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6638772, -122.37688],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name6 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6648093, -122.31463],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //     ]
+    //   }
+    // };
     console.log(res.data.data);
     setPosts(res.data.data);
 
