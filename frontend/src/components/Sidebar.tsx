@@ -4,6 +4,7 @@ import { useState } from "react";
 import SidebarPost from "./SidebarPost";
 import { Post } from "../types/post";
 import { getTagName } from "../util/tagHandler";
+import CloseIcon from '@mui/icons-material/Close';
 
 
 function Sidebar(props: {posts: Post[], selectedPost: Post|undefined, setSelectedPost: (post: Post|undefined)=>void}) {
@@ -23,10 +24,10 @@ function Sidebar(props: {posts: Post[], selectedPost: Post|undefined, setSelecte
             </div>
             <div className={`flex-shrink-0 w-screen h-full ${sidebarOpen ? 'sm:max-w-xs max-w-screen-sm' : 'max-w-0'} transition-all overflow-hidden`}>
                 <div className="flex flex-col w-[calc(100vw-48px)] sm:max-w-xs h-screen relative">
-                    <div className="w-full py-3 text-center text-xl font-bold bg-gradient-to-b from-light-400 to-light-500 shadow-lg">Product Name</div>
-                    <div className={`${props.selectedPost ? 'max-h-screen' : 'max-h-0'}`}>
+                    <div className="w-full py-3 text-center text-xl font-bold bg-gradient-to-b from-light-400 to-light-500 shadow-lg">Sea Money</div>
+                    <div className={`relative z-30 h-fit flex-shrink-0 overflow-y-scroll custom-scrollbar shadow ${props.selectedPost ? 'max-h-[24rem]' : 'max-h-0'}`}>
                         {props.selectedPost && 
-                        <div className="p-4">
+                        <div className="p-4 pb-2">
                             <div className="text-xl font-bold">{props.selectedPost.display_name}</div>
                             <p className="">{props.selectedPost.description}</p>
                             <div className="text-sm mt-1">Google Maps: <a href={`https://maps.google.com/?q=${props.selectedPost.location[0]},${props.selectedPost.location[1]}`} target="_blank" className="font-normal">{props.selectedPost.location[0]}, {props.selectedPost.location[1]}</a></div>
@@ -35,9 +36,10 @@ function Sidebar(props: {posts: Post[], selectedPost: Post|undefined, setSelecte
                                     <div key={index} className="bg-light-500 px-2 rounded">{getTagName(tag)}: <span className="text-green-500 font-extrabold">{'$ '.repeat(props.selectedPost?.price_rating[index]||0)}</span></div>
                                 )}
                             </div>
+                            <div className="absolute top-0 right-0 pt-2 cursor-pointer" onClick={()=>props.setSelectedPost(undefined)}><CloseIcon /></div>
                         </div>}
                     </div>
-                    <div className="flex flex-col px-4 pt-3 h-full overflow-y-scroll custom-scrollbar">
+                    <div className="flex flex-col px-4 pt-3 h-full overflow-y-scroll custom-scrollbar bg-gradient-to-b from-light-300 to-light-300">
                         {props.posts.map((post, index)=>{
                             return (<SidebarPost key={index} post={post} onClick={()=>props.setSelectedPost(post)}></SidebarPost>)
                         })}
