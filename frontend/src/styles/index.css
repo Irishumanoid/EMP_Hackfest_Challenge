@@ -60,3 +60,28 @@ h4 {
 .button.destructive {
   @apply border-2 border-red-500 hover:border-red-600;
 }
+
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #c1bfcf;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #908e9a;
+}
+
+.mapPopup .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+  background-color: #eae9fe;
+}

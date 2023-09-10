@@ -1,31 +1,129 @@
-
+import { useEffect, useState } from "react";
+import Sidebar from "./components/Sidebar";
+import Map from "./components/Map";
+import { Post } from "./types/post";
+import { POST } from "./util/apiHandler";
+import ShareLocationPopup from "./components/ShareLocationPopup";
 
 function App() {
 
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Post|undefined>(undefined);
+  const [selectedType, setSelectedType] = useState<string>("all");
+
+  const [uploadLocation, setUploadLocation] = useState<number[]|undefined>(undefined);
+  function addLocation(loc: number[]) {
+    setUploadLocation(loc);
+  }
+
+  async function refresh() {
+
+    var location = [47.6061, -122.3328];
+    try {
+      var geo = await new Promise<GeolocationPosition>((res, rej)=>{
+        navigator.geolocation.getCurrentPosition(res, rej)
+      })
+      location = [geo.coords.latitude, geo.coords.longitude];
+    } catch (e) {};
+
+    const res = await POST("/get_posts", {location, tag: (selectedType == 'all' ? undefined : selectedType), max_price: 5});
+    // const res = {
+    //   data: {
+    //     success: true,
+    //     data: [
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.7, -122.3328],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name2 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6919990, -122.35909],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name3 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6656185, -122.34628],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name4 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6865933, -122.40318],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name5 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6638772, -122.37688],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //       {
+    //         id: 1,
+    //         display_name: "This is a name6 :o",
+    //         description: "testing descriptionas dfad sfjkl asdfl ;asdjf;lasjdf;laj",
+    //         location: [47.6648093, -122.31463],
+    //         tags: ["gas", "store", "food"],
+    //         price_rating: [4, 1, 2],
+    //       },
+    //     ]
+    //   }
+    // };
+
+    console.log(res.data.data);
+    setPosts(res.data.data);
+
+
+    // TESTING:
+    //setSelectedPost(res.data.posts[0]);
+  }
+
+
+  async function Upload(name: string, description: string, location: number[], tags: string[], ratings: number[]) {
+    var res = await POST("/post_post", {
+        display_name: name, 
+        description: description, 
+        location: location, 
+        tags: tags, 
+        price_rating: ratings,
+        username: ""
+    });
+    console.log(res);
+    await refresh();
+
+    setUploadLocation(undefined);
+  }
+
+  useEffect(()=>{
+    refresh();
+    //upload();
+  }, [selectedType]);
+
   return (
-    <>
-      <div className='w-full mt-4 text-center'>
-        <h1 className=''>Example Heading 1</h1>
-        <h2 className=''>Example Heading 2</h2>
-        <h3 className=''>Example Heading 3</h3>
-        <h4 className=''>Example Heading 4</h4>
-        <br></br>
-        <p className='mx-auto max-w-md'>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Itaque inventore facere veritatis, vitae blanditiis doloribus unde nobis harum. Neque harum modi at! Saepe mollitia placeat modi rem, quae totam unde.</p>
-        <br></br>
-        <div>
-          <a href='https://www.google.com' className=''>Example link</a>
-        </div>
-        <div>
-          <a href='https://www.google.com' className='underline'>Example link</a>
-        </div>
-        <div className="mt-8 flex gap-6 justify-center items-center">
-          <div className="button primary">Primary Button</div>
-          <div className="button secondary">Secondary Button</div>
-          <div className="button">Alternate Button</div>
-          <div className="button destructive">Destructive Button</div>
+    <div className="w-full h-screen">
+      <div className="w-full h-full overflow-hidden relative flex flex-row">
+        <Sidebar posts={posts} selectedPost={selectedPost} setSelectedPost={setSelectedPost} selectedType={selectedType} setSelectedType={setSelectedType}></Sidebar>
+        <div className="w-full h-full overflow-hidden relative">
+          <Map posts={posts} selectedPost={selectedPost} setSelectedPost={setSelectedPost} addLocation={addLocation}/>
         </div>
       </div>
-    </>
+      {uploadLocation && 
+        <ShareLocationPopup onCancel={()=>setUploadLocation(undefined)} onSubmit={Upload} uploadLocation={uploadLocation}/>
+      }
+    </div>
   )
 }
 
