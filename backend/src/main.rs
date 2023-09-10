@@ -3,7 +3,6 @@ use std::sync::{Mutex, Arc};
 use pic_handler::uploader;
 use rocket::{serde::json::Json, http::{ContentType, Header}, fairing::{Fairing, Info, Kind}, Request, Response, fs::FileServer, State};
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, from_str};
 use sightings::Database;
 
 
@@ -14,12 +13,6 @@ mod macros;
 
 #[macro_use]
 extern crate rocket;
-
-#[get("/")]
-fn index() -> &'static str {
-    "Landing page"
-}
-
 
 #[derive(Deserialize, Serialize)]
 pub struct DeprecatedUserPost {
@@ -42,7 +35,7 @@ impl ServerState {
     }
 }
 
-#[post("/backend/post_post", data = "<post>")]
+#[post("/post_post", data = "<post>")]
 fn post_post(post: Json<DeprecatedUserPost>, server_arc: &State<Arc<Mutex<ServerState>>>) -> (ContentType, String) {
     let server = server_arc.lock().unwrap();
     server.database.lock().unwrap().add_submission(sightings::UserPost::new(post.0));
@@ -79,7 +72,7 @@ fn all_options() {
 }
 
 
-#[post["/backend/get_posts", data = "<filters>"]]
+#[post["/get_posts", data = "<filters>"]]
 fn get_posts(filters: Json<GetPostFilters>, server_arc: &State<Arc<Mutex<ServerState>>>) -> (ContentType, String) {
     let server = server_arc.lock().unwrap();
     let posts: Vec<sightings::UserPost> = if filters.tag.is_some() {
@@ -104,16 +97,19 @@ fn rocket() -> _ {
         .manage(server.clone())
         .attach(CORS)
         .mount(
-            "/images",
-            FileServer::from("images"),
+            "/backend/images",
+            FileServer::from("images").rank(1),
         )
-        .mount("/", routes![
+        .mount("/backend", routes![
             all_options,
-            index,
             post_post,
             get_posts,
             uploader,
         ])
+        .mount(
+            "/",
+            FileServer::from("../frontend/dist"),
+        )
 }
 
 pub struct CORS;
