@@ -151,6 +151,7 @@ impl Database {
 #[derive(Clone, Serialize, std::fmt::Debug, Deserialize)]
 pub struct UserPost {
     pub display_name: String,
+    pub username: String,
     pub description: String,
     pub location: Coordinates,
     pub tags: Vec<PostType>,
@@ -209,10 +210,11 @@ pub fn conv_to_cpt(tags: Vec<PostType>) -> (Vec<String>, Vec<i32>) {
 
 
 impl UserPost {
-    pub fn from(display_name : String, description : String, location : [f64; 2], tags : Vec<PostType>, picture : Option<String>) -> UserPost {
+    pub fn from(display_name : String, description : String, username: String, location : [f64; 2], tags : Vec<PostType>, picture : Option<String>) -> UserPost {
         UserPost {
             display_name,
             description,
+            username,
             location: Coordinates::new(location[0], location[1]),
             tags,
             picture,
@@ -222,6 +224,7 @@ impl UserPost {
         UserPost {
             display_name: post.display_name,
             description: post.description,
+            username: post.username,
             location: Coordinates::new(post.location[0].into(), post.location[1].into()),
             tags: conv_to_pt(post.tags, post.price_rating.clone()),
             picture: post.picture,
@@ -231,6 +234,7 @@ impl UserPost {
         let n = conv_to_cpt(self.tags);
         crate::ClientUserPost {
             display_name : self.display_name,
+            username : self.username,
             description : self.description,
             location : [self.location.latitude, self.location.longitude],
             tags : n.0,
@@ -420,6 +424,7 @@ mod tests {
         let mut db = Database::new();
 
         let post1 = UserPost::from(
+            "7 11".to_string(),
             "John Billy".to_string(),
             "Gas station here only 4.99 / gal".to_string(), 
             [47.6720145,-122.3539607], 
@@ -430,6 +435,7 @@ mod tests {
         db.add_submission(post1);
 
         let post2 = UserPost::from(
+            "Big parking Lot".to_string(),
             "John Billy 2".to_string(),
             "GREAT PARKING PLACE!".to_string(), 
             [47.667762, -122.339747], 

@@ -17,6 +17,7 @@ extern crate rocket;
 #[derive(Deserialize, Serialize)]
 pub struct ClientUserPost {
     pub display_name: String,
+    pub username: String,
     pub description: String,
     pub location: [f64; 2],
     pub tags: Vec<String>,
