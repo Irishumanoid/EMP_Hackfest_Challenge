@@ -1,7 +1,20 @@
 import { Button, TextField } from "@mui/material";
 import LocationScreenshot from "./LocationScreenshot";
+import { useRef } from "react";
 
-function ShareLocationPopup(props: {onCancel: ()=>void, onSubmit: ()=>void, uploadLocation: number[]}) {
+function ShareLocationPopup(props: {onCancel: ()=>void, onSubmit: (name: string, description: string, location: number[], tags: string[], ratings: number[])=>void, uploadLocation: number[]}) {
+
+    const nameRef = useRef<HTMLInputElement>(null);
+    const descriptionRef = useRef<HTMLInputElement>(null);
+
+
+    function onTrySubmit()
+    {
+        if (nameRef.current?.value && descriptionRef.current?.value)
+        {
+            props.onSubmit(nameRef.current.value, descriptionRef.current.value, props.uploadLocation, [], []);
+        }
+    }
 
     return (
         <div className="absolute top-0 right-0 left-0 bottom-0 z-[1000] px-2 bg-black bg-opacity-50 flex flex-col justify-center items-center">
@@ -9,10 +22,10 @@ function ShareLocationPopup(props: {onCancel: ()=>void, onSubmit: ()=>void, uplo
                 <div className="text-2xl font-bold mb-2">Share a Location</div>
                 
                 <div className="w-full mt-1">
-                    <TextField id="standard-required" label="Name of Location" variant="outlined" size="small" className="w-full"/>
+                    <TextField id="standard-required" label="Name of Location" variant="outlined" size="small" className="w-full" inputRef={nameRef}/>
                 </div>
                 <div className="w-full mt-3">
-                    <TextField id="standard-multiline" label="Description" multiline rows={6} variant="outlined" size="small" className="w-full"/>
+                    <TextField id="standard-multiline" label="Description" multiline rows={6} variant="outlined" size="small" className="w-full" inputRef={descriptionRef}/>
                 </div>
                 
                 <div className="rounded-lg shadow-lg overflow-hidden mt-4 mb-1">
@@ -27,7 +40,7 @@ function ShareLocationPopup(props: {onCancel: ()=>void, onSubmit: ()=>void, uplo
                 
                 <div className="flex flex-wrap text-lg font-semibold gap-1 my-2">
                     <Button variant="outlined" onClick={props.onCancel}>Cancel</Button>
-                    <Button variant="contained">Submit</Button>
+                    <Button variant="contained" onClick={onTrySubmit}>Submit</Button>
                 </div>
             </div>
         </div>

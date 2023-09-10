@@ -79,16 +79,18 @@ function App() {
     //setSelectedPost(res.data.posts[0]);
   }
 
-  async function upload() {
+  async function Upload(name: string, description: string, location: number[], tags: string[], ratings: number[]) {
     var res = await POST("/post_post", {
-        display_name: "Bongos Restaurant", 
-        description: "I bought some jerk chicken for like $7 and thats pretty cool i would rate the taste 9/10! Def a hidden gem of seattle!", 
-        location: [47.6766866,-122.3470622], 
-        tags: ["Food"], 
-        price_rating: [2]
+        display_name: name, 
+        description: description, 
+        location: location, 
+        tags: tags, 
+        price_rating: ratings
     });
     console.log(res);
     await refresh();
+
+    setUploadLocation(undefined);
   }
 
   useEffect(()=>{
@@ -105,7 +107,7 @@ function App() {
         </div>
       </div>
       {uploadLocation && 
-        <ShareLocationPopup onCancel={()=>setUploadLocation(undefined)} onSubmit={()=>{}} uploadLocation={uploadLocation}/>
+        <ShareLocationPopup onCancel={()=>setUploadLocation(undefined)} onSubmit={Upload} uploadLocation={uploadLocation}/>
       }
     </div>
   )
