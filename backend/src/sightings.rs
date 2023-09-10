@@ -123,7 +123,6 @@ pub struct UserPost {
     pub location: Coordinates,
     pub tags: Vec<PostType>,
     pub picture: Option<String>,
-    pub price_rating: Vec<i32>,
 }
 
 
@@ -178,14 +177,13 @@ pub fn conv_to_cpt(tags: Vec<PostType>) -> (Vec<String>, Vec<i32>) {
 
 
 impl UserPost {
-    pub fn from(display_name : String, description : String, location : [f64; 2], tags : Vec<PostType>, picture : Option<String>, price_rating : Vec<i32>) -> UserPost {
+    pub fn from(display_name : String, description : String, location : [f64; 2], tags : Vec<PostType>, picture : Option<String>) -> UserPost {
         UserPost {
             display_name,
             description,
             location: Coordinates::new(location[0], location[1]),
             tags,
             picture,
-            price_rating,
         }
     }
     pub fn new(post: crate::ClientUserPost) -> UserPost {
@@ -195,7 +193,6 @@ impl UserPost {
             location: Coordinates::new(post.location[0].into(), post.location[1].into()),
             tags: conv_to_pt(post.tags, post.price_rating.clone()),
             picture: post.picture,
-            price_rating: post.price_rating,
         }
     }
     pub fn to_ClientUserPost(self) -> crate::ClientUserPost {
@@ -221,6 +218,7 @@ impl UserPost {
                 })
             .collect::<Vec<bool>>()
         )
+    }
     pub fn same_type(&self, tag : &String) -> bool {
             for self_tag in &self.tags.iter().map(|t: &PostType | 
                 t.get_string()

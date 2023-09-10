@@ -80,10 +80,10 @@ fn all_options() {
 #[post["/get_posts", data = "<filters>"]]
 fn get_posts(filters: Json<GetPostFilters>, server_arc: &State<Arc<Mutex<ServerState>>>) -> (ContentType, String) {
     let server = server_arc.lock().unwrap();
-    let posts: Vec<sightings::UserPost> = if filters.tag.is_some() {
-        server.database.lock().unwrap().popular_posts(filters.0).iter().map(|entry| entry.post.clone()).collect()
+    let posts: Vec<ClientUserPost> = if filters.tag.is_some() {
+        server.database.lock().unwrap().popular_posts(filters.0).iter().map(|entry| entry.post.clone().to_ClientUserPost()).collect()
     } else {
-        server.database.lock().unwrap().data.iter().map(|entry| entry.post.clone()).collect()
+        server.database.lock().unwrap().data.iter().map(|entry| entry.post.clone().to_ClientUserPost()).collect()
     };
     let resp = &APIResponse {success: true, error: None, data: Some(posts)};
     let serialized_posts = serde_json::to_string(&resp);
