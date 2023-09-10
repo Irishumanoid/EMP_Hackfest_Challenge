@@ -3,7 +3,10 @@ import Sidebar from "./components/Sidebar";
 import Map from "./components/Map";
 import { Post } from "./types/post";
 import { POST } from "./util/apiHandler";
+
+import {addLocationInSeattle, generateMatching } from "./weaviate/locations";
 import ShareLocationPopup from "./components/ShareLocationPopup";
+
 
 function App() {
 
@@ -72,12 +75,38 @@ function App() {
     //     ]
     //   }
     // };
+    
+      const resWithIdentifier = {
+      data: {
+        success: true,
+        posts: res.data.posts.map(post => ({
+          identifier: post.id, // rename 'id' to 'identifier' to be compatible with weaviate
+          display_name: post.display_name,
+          description: post.description,
+          location: post.location,
+          tags: post.tags,
+          price_rating: post.price_rating,
+        })),
+      },
+    }
+
+    for (const loc in resWithIdentifier) {
+      addLocationInSeattle(loc);
+    }
+    
+    let query_results = generateMatching(`Pick a location in Seattle close to Seattle Center: {Location}.`, 1);
+    console.log(`top proximity result ${query_results}`);
+
+    console.log(res.data);
+    setPosts(res.data.posts);
     console.log(res.data.data);
     setPosts(res.data.data);
+
 
     // TESTING:
     //setSelectedPost(res.data.posts[0]);
   }
+
 
   async function Upload(name: string, description: string, location: number[], tags: string[], ratings: number[]) {
     var res = await POST("/post_post", {
