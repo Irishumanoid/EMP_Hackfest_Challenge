@@ -23,6 +23,7 @@ pub struct ClientUserPost {
     pub tags: Vec<String>,
     pub price_rating: Vec<i32>,
     pub picture: Option<String>,
+    pub score_cache : f64,
 }
 
 struct ServerState {
